@@ -14,4 +14,6 @@ function auth(req,res,next){
         return res.status(401).json({error: 'cookie error'})
     }
 }
+
+
 module.exports={auth}

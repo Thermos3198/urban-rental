@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt')
 const jwt=require('jsonwebtoken')
-const { findByEmail} = require('../models/userModel.js')
+const {findByEmail,isValidEmail, Banusermod} = require('../models/adminModel.js')
+const {insertVehicleImg,allVehicleImg,delVehicleImg}=require('../models/carImgModel.js')
 const config=require('../config/dotenvConfig')
 
 const cookieOpts={
@@ -20,6 +21,14 @@ async function login(req,res){
         }
         const exists = await findByEmail(email)
 
+        if(!isValidEmail(email)){
+            return res.status(400).json({error:"Érvénytelen email formátum"})
+        }
+
+        if(psw.length<8){
+            return res.status(400).json({error:"A jelszó rövidebb mint 8 character"})
+        }
+        
         if(!exists) {
             return res.status(401).json({error: 'hibás email'})
         }
@@ -64,8 +73,54 @@ async function logout(req,res){
 }
 
 async function carimgupload(req,res){
-    
+    try {
+        const {vehicle_id} = req.params
+        const img = `uploads/${vehicle_id}/${req.file.filename}` 
+        console.log(img);
+
+        const result = await insertVehicleImg(vehicle_id,img)
+        console.log(result);
+        res.status(201).json({message:"Sikeres feltöltés"})
+
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ error: "Hiba a feltöltésen", err })
+    }
 }
 
 
-module.exports = {login, whoAmI,logout,carimgupload}
+async function getcarImg(req,res) {
+    try {
+        const result = await allVehicleImg()
+        console.log(result);
+        res.status(200).json({result})
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({error:"Nem sikerült lekérdezni az autokat",err})
+    }
+}
+
+async function deleteImages(req,res) {
+    try {
+        const {img} = req.body
+        const {vehicle_id} = req.params 
+        const result = await delVehicleImg(vehicle_id,img)
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({error:"Nem sikerült törölni",err})
+    }
+}
+
+
+async function banuser(req,res){
+    try {
+        const {user_id}=req.params
+        const result=await Banusermod(user_id)
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({error:"Nem sikerült törölni",err})
+    }
+}
+
+
+module.exports = {login, whoAmI,logout,carimgupload,getcarImg,deleteImages, banuser}

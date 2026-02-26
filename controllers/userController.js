@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const { findByEmail, createUser } = require('../models/userModel.js')
+const { findByEmail, createUser, isValidEmail } = require('../models/userModel.js')
 const config = require('../config/dotenvConfig')
 
 const cookieOpts = {
@@ -18,6 +18,15 @@ async function register(req, res) {
         if (!username || !email || !psw) {
             return res.status(400).json({ error: "Minden adatot megkell adni" })
         }
+        
+        if(!isValidEmail(email)){
+            return res.status(400).json({error:"Érvénytelen email formátum"})
+        }
+
+        if(psw.length<8){
+            return res.status(400).json({error:"A jelszó rövidebb mint 8 character"})
+        }
+        
         const exists = await findByEmail(email)
         console.log(exists);
         if (exists !==null) {
