@@ -1,11 +1,19 @@
 const db = require('../db/db')
 
-async function reservation(user_id,vehicle_id,pickup_date,return_date) {
+async function reservation(user_id) {
+    const sql= 'SELECT * FROM `reservations` WHERE `user_id`=?'
+    const [result] = await db.query(sql, [user_id]);
+    console.log(result);
+    return result
+}
+
+async function newreservation(user_id,vehicle_id,pickup_date,return_date) {
     const sql= 'INSERT INTO `reservations`(`reservation_id`, `user_id`, `vehicle_id`, `pickup_date`, `return_date`, `status`, `reservation_date`) VALUES (NULL,?,?,?,?,"lefoglalva",CURRENT_TIMESTAMP)'
     const [result] = await db.query(sql, [user_id,vehicle_id,pickup_date,return_date]);
     console.log(result);
     return result
 }
+
 
 async function updatereservation(vehicle_id,pickup_date,return_date,status){
     const sql = 'UPDATE `reservations` SET `vehicle_id`=?,`pickup_date`=?,`return_date`=?,`status`=? WHERE `reservation_id`=?'
@@ -20,4 +28,4 @@ async function deletereservation(reservation_id) {
     console.log(result);
     return result
 }
-module.exports = {reservation, updatereservation, deletereservation}
+module.exports = {newreservation, updatereservation, deletereservation,reservation}

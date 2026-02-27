@@ -1,9 +1,11 @@
 const express = require('express')
 const {auth}=require('../middleware/userMiddleware')
-const {reservation,updatereservation,deletereservation}=require('../models/reserveModel.js')
+const {reservation,newreservation,updatereservation,deletereservation}=require('../models/reserveModel.js')
 const router = express.Router()
+//router that handles the user reserving a car
+router.get('/reservation', auth, reservation)
 
-router.post('/reservation', auth, reservation)
+router.post('/newreservation', auth, newreservation)
 
 router.put('/updatereservation', auth, updatereservation)
 
