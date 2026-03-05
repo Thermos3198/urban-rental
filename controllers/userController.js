@@ -14,7 +14,7 @@ const cookieOpts = {
 async function register(req, res) {
     try {
         const { username, email, psw } = req.body
-        //console.log(username,email,psw);
+        console.log(username,email,psw);
         if (!username || !email || !psw) {
             return res.status(400).json({ error: "Minden adatot megkell adni" })
         }
@@ -65,6 +65,7 @@ async function login(req, res) {
         console.log("psw:", psw);
         console.log("exists.password:", exists.user_id);
         const ok = await bcrypt.compare(psw, exists.password);
+        console.log(ok);
         if (!ok) {
             return res.status(401).json({ error: 'Hibás jelszó' });
         }
@@ -82,8 +83,6 @@ async function login(req, res) {
         res.cookie(config.COOKIE_NAME, token, cookieOpts)
         return res.status(200).json({ message: 'Sikeres login' })
 
-
-
     } catch (err) {
         console.error("Login error stack:", err.stack || err);
         return res.status(500).json({ error: 'belepesi hiba', details: err.message || err });
@@ -92,10 +91,16 @@ async function login(req, res) {
 
 async function whoAmI(req, res) {
     try {
-        const { user_id, username, email, role } = req.user
-        //console.log(user_id,username,email,role);
-        return res.status(200).json({ user_id: user_id, username: username, email: email, role: role, created_at: exists.created_at })
+        console.log(req.user);
+        if (!req.user) {
+            return res.status(401).json({ error: 'Not authenticated' });
+        }
+        const { user_id, username, email, role, created_at } = req.user
+        console.log(user_id, username, email, role, created_at );
+
+        return res.status(200).json({user_id: user_id, username: username, email: email, role: role, created_at: created_at })
     } catch (err) {
+        console.log(err);
         return res.status(500).json({ error: 'whoami server hiba' })
     }
 }
