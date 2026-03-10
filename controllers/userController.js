@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const { findByEmail, createUser, isValidEmail } = require('../models/userModel.js')
+const { findByEmail, createUser, isValidEmail,insertUserImg, showuserprofilepic,edituserdata,deleteuserdata} = require('../models/userModel.js')
 const config = require('../config/dotenvConfig')
 
 const cookieOpts = {
@@ -114,4 +114,65 @@ async function logout(req, res) {
     }
 }
 
-module.exports = { register, login, whoAmI, logout }
+async function showuserprofile(req,res){
+    try {
+        console.log(req.user);
+        if (!req.user) {
+            return res.status(401).json({ error: 'Not authenticated' });
+        }
+        const { user_id, username, email, role, created_at } = req.user
+        console.log(user_id, username, email, role, created_at );
+        const img= await showuserprofilepic(user_id)
+
+        return res.status(200).json({user_id: user_id, username: username, email: email, role: role, created_at: created_at ,img:img})
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ error: 'showuserprofile server hiba' })
+    }
+}
+
+async function newuserprofilepic(req,res){
+    try {
+        const {user_id} = req.params
+        const img = `uploads/${user_id}/${req.file.filename}` 
+        console.log(img);
+
+        const result = await insertUserImg(user_id,img)
+        console.log(result);
+        res.status(201).json({message:"Sikeres feltöltés"})
+
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ error: "Hiba a feltöltésen", err })
+    }
+}
+
+async function edituser(req,res){
+    try {
+        const {username,email,password,user_id} = req.params
+        console.log(username,email,password,user_id);
+        const result = await edituserdata(username,email,password,user_id)
+        console.log(result);
+        res.status(201).json({message:"Sikeres modisitás"})
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ error: "Hiba az editnél", err })
+    }
+}
+
+
+async function deleteuser(req,res){
+    try {
+        const {user_id} = req.params
+        console.log(user_id);
+        const result = await deleteuserdata(user_id)
+        console.log(result);
+        res.status(200).json({message:"Sikeres törlés"})
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ error: "Hiba a törléskor", err })
+    }
+}
+
+
+module.exports = { register, login, whoAmI, logout, showuserprofile, newuserprofilepic,edituser,deleteuser } 

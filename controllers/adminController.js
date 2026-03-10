@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt')
 const jwt=require('jsonwebtoken')
 const {findByEmail,isValidEmail, Banusermod} = require('../models/adminModel.js')
-const {insertVehicleImg,allVehicleImg,delVehicleImg}=require('../models/carImgModel.js')
+const {insertVehicleImg,allVehicleImg,delCarImg}=require('../models/carImgModel.js')
 const config=require('../config/dotenvConfig')
 
 const cookieOpts={
@@ -89,6 +89,20 @@ async function carimgupload(req,res){
 }
 
 
+async function delVehicleImg(req,res) {
+    try {
+        const {img} = req.body
+        const {vehicle_id} = req.params 
+        const result = await delCarImg(vehicle_id,img)
+        console.log(result);
+        res.status(200).json({message:"Sikeres törlés"})
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({error:"Nem sikerült törölni",err})
+    }
+}
+
+
 async function getcarImg(req,res) {
     try {
         const result = await allVehicleImg()
@@ -100,16 +114,6 @@ async function getcarImg(req,res) {
     }
 }
 
-async function deleteImages(req,res) {
-    try {
-        const {img} = req.body
-        const {vehicle_id} = req.params 
-        const result = await delVehicleImg(vehicle_id,img)
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({error:"Nem sikerült törölni",err})
-    }
-}
 
 
 async function banuser(req,res){
@@ -123,4 +127,4 @@ async function banuser(req,res){
 }
 
 
-module.exports = {login, whoAmI,logout,carimgupload,getcarImg,deleteImages, banuser}
+module.exports = {login, whoAmI,logout,carimgupload,getcarImg,delVehicleImg, banuser}
