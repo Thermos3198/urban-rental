@@ -7,4 +7,11 @@ async function getcardata() {
     return result
 }
 
-module.exports = {getcardata}
+async function insernewcar(){
+    const sql='INSERT INTO `vehicles`(`category_id`, `Brand`, `model`, `color`, `transmission`, `pass_number`) VALUES (?,?,?,?,?,?)'
+    const [result] = await db.query(sql);
+    console.log(result);
+    return result
+}
+
+module.exports = {getcardata, insernewcar}
