@@ -11,10 +11,10 @@ async function allVehicleImg() {
     const [result] = await db.query(sql)
     return result;
 }
-async function delVehicleImg(vehicle_id,img){
+async function delCarImg(vehicle_id,img){
     const sql = 'DELETE FROM `vehicles_img` WHERE `vehicle_id`=? AND img=?'
     const [result] = await db.query(sql,[vehicle_id,img])
     return result
 }
 
-module.exports = {insertVehicleImg,allVehicleImg,delVehicleImg}
+module.exports = {insertVehicleImg,allVehicleImg,delCarImg}
