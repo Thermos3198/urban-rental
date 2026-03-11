@@ -4,41 +4,46 @@ const {adminauth}=require('../middleware/adminMiddleware.js')
 //good
 const {login, whoAmI, logout, carimgupload, banuser, delVehicleImg } = require('../controllers/adminController.js')
 
-const {addNewMaintenance, editMaintenance, maintenancedone}=require('../models/Maintenencemodels.js')
+const {insernewcar,editcar,deletecar} = require('../controllers/cardataController.js')
 
-const {addNewcategory,updateCategory,deleteCategory}=require('../models/categoryModel.js')
+const {addNewM,editM,mdone} = require('../controllers/maintenanceController.js')
 
-const {insernewcar}=require('../models/cardataModel.js')
-
+const {addNewcategory,updateCategory,deleteCategory} = require('../controllers/categoryController.js')
 
 const router = express.Router()
-//basic good
+//basic 
 router.post('/login', login)
 router.get('/whoami', adminauth,  whoAmI)
 router.post('/logout', adminauth, logout)
-//carimg goood
+//carimg 
 router.post('/carimgupload',adminauth, upload.single("img"), carimgupload)
 router.delete('/:vehicle_id',adminauth,delVehicleImg)
 
-//new car not good
-router.post('newvehicle',adminauth,insernewcar)
-//todo add cardatacontroller and add that to it+ delete+update
+//new car
 
-//maintenence not good
-router.post('/newmaintenance', adminauth, addNewMaintenance)
+router.post('/deletecar',adminauth,deletecar)
 
-router.put('/editmaintenance', adminauth, editMaintenance)
+router.post('/newvehicle',adminauth,insernewcar)
 
-router.put('/maintenancedone', adminauth, maintenancedone )
+router.put('/editvehicle',adminauth,editcar)
 
-//vehicle category not good
+
+//maintenence
+router.post('/newmaintenance', adminauth, addNewM)
+
+router.put('/editmaintenance', adminauth, editM)
+
+router.put('/maintenancedone', adminauth, mdone )
+
+
+//vehicle category
 router.post('/newcategory', adminauth, addNewcategory)
 
 router.put('/updatecategory', adminauth, updateCategory)
 
 router.delete('/deletecategory', adminauth, deleteCategory)
 
-//deleteuser noot good
+//deleteuser 
 router.delete('/:deleteuser',adminauth, banuser)
 
 module.exports = router
