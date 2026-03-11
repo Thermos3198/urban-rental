@@ -1,25 +1,14 @@
 filer routes and models
     filter by different types and get the data back
 
-my profile  +
-    pfp +
-    usernamechange
-    pswchange
-
-reservations
-    idk just work
-
-
-admin
-    carimg upload
-
-bugfix
- asd
-
 postman végpontok
-todo add cardatacontroller and add that to it+ delete+update
-more controllers
+todo 
+frontend isk
+
+reservation
+    admin:
+        delete
+        update
+
 :)
 the funny
-frontend is
-
