@@ -8,7 +8,7 @@ const {insernewcar,editcar,deletecar} = require('../controllers/cardataControlle
 
 const {addNewM,editM,mdone} = require('../controllers/maintenanceController.js')
 
-const {addNewcategory,updateCategory,deleteCategory} = require('../controllers/categoryController.js')
+const {addNewC, updateC, deleteC} = require('../controllers/categoryController.js')
 
 const router = express.Router()
 //basic 
@@ -37,11 +37,11 @@ router.put('/maintenancedone', adminauth, mdone )
 
 
 //vehicle category
-router.post('/newcategory', adminauth, addNewcategory)
+router.post('/newcategory', adminauth, addNewC)
 
-router.put('/updatecategory', adminauth, updateCategory)
+router.put('/updatecategory', adminauth, updateC)
 
-router.delete('/deletecategory', adminauth, deleteCategory)
+router.delete('/deletecategory', adminauth, deleteC)
 
 //deleteuser 
 router.delete('/:deleteuser',adminauth, banuser)
