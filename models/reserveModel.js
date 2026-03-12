@@ -15,9 +15,9 @@ async function newreservation(user_id,vehicle_id,pickup_date,return_date) {
 }
 
 
-async function updatereservation(vehicle_id,pickup_date,return_date,status){
+async function updatereservation(vehicle_id,pickup_date,return_date,status, reservation_id){
     const sql = 'UPDATE `reservations` SET `vehicle_id`=?,`pickup_date`=?,`return_date`=?,`status`=? WHERE `reservation_id`=?'
-    const [result] = await db.query(sql, [vehicle_id,pickup_date,return_date,status])
+    const [result] = await db.query(sql, [vehicle_id,pickup_date,return_date,status,reservation_id])
     console.log(result);
     return result
 }
