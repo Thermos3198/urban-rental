@@ -72,22 +72,32 @@ async function logout(req,res){
     }
 }
 
-async function carimgupload(req,res){
-    try {
-        const {vehicle_id} = req.params
-        const img = `uploads/${vehicle_id}/${req.file.filename}` 
-        console.log(img);
 
-        const result = await insertVehicleImg(vehicle_id,img)
-        console.log(result);
-        res.status(201).json({message:"Sikeres feltöltés"})
+async function carimgupload(req, res) {
+    try {
+        const { vehicle_id } = req.params
+
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ error: "Nincs feltöltött kép" })
+        }
+
+        const results = []
+
+        for (const file of req.files) {
+            const img = `uploads/${vehicle_id}/${file.filename}`
+            console.log(img)
+
+            const result = await insertVehicleImg(vehicle_id, img)
+            results.push(result)
+        }
+
+        res.status(201).json({message: "Sikeres feltöltés",uploaded: req.files.length})
 
     } catch (err) {
-        console.log(err);
+        console.log(err)
         return res.status(500).json({ error: "Hiba a feltöltésen", err })
     }
 }
-
 
 async function delVehicleImg(req,res) {
     try {
