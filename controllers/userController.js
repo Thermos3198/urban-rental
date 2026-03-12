@@ -23,7 +23,8 @@ async function register(req, res) {
             return res.status(400).json({error:"Érvénytelen email formátum"})
         }
 
-        if(psw.length<8){
+
+        if(psw.contains<8){
             return res.status(400).json({error:"A jelszó rövidebb mint 8 character"})
         }
         
