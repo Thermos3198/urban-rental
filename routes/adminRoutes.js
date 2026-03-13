@@ -6,8 +6,6 @@ const {login, whoAmI, logout, banuser, delVehicleImg, carwithimgupload } = requi
 
 const {insernewcar,editcar,deletecar} = require('../controllers/cardataController.js')
 
-const {addNewM,editM,mdone} = require('../controllers/maintenanceController.js')
-
 const {addNewC, updateC, deleteC} = require('../controllers/categoryController.js')
 
 const router = express.Router()
@@ -28,14 +26,6 @@ router.post('/deletecar',adminauth,deletecar)
 router.post('/newvehicle',adminauth,insernewcar)
 
 router.put('/editvehicle',adminauth,editcar)
-
-
-//maintenence
-router.post('/newmaintenance', adminauth, addNewM)
-
-router.put('/editmaintenance', adminauth, editM)
-
-router.put('/maintenancedone', adminauth, mdone )
 
 
 //vehicle category
