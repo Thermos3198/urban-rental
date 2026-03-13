@@ -135,8 +135,8 @@ async function showuserprofile(req,res){
 async function newuserprofilepic(req,res){
     try {
         const {user_id} = req.params
+        console.log(user_id);
         const img = `uploads/${user_id}/${req.file.filename}` 
-        console.log(img);
 
         const result = await insertUserImg(user_id,img)
         console.log(result);
@@ -150,7 +150,8 @@ async function newuserprofilepic(req,res){
 
 async function edituser(req,res){
     try {
-        const {username,email,password,user_id} = req.params
+        const {user_id} = req.params
+        const {username,email,password} = req.body
         console.log(username,email,password,user_id);
         const result = await edituserdata(username,email,password,user_id)
         console.log(result);
