@@ -2,7 +2,7 @@ const express = require('express')
 const {upload}=require('../middleware/uploadMiddleware.js')
 const {adminauth}=require('../middleware/adminMiddleware.js')
 //good
-const {login, whoAmI, logout, carimgupload, banuser, delVehicleImg } = require('../controllers/adminController.js')
+const {login, whoAmI, logout, banuser, delVehicleImg, carwithimgupload } = require('../controllers/adminController.js')
 
 const {insernewcar,editcar,deletecar} = require('../controllers/cardataController.js')
 
@@ -16,7 +16,9 @@ router.post('/login', login)
 router.get('/whoami', adminauth,  whoAmI)
 router.post('/logout', adminauth, logout)
 //carimg 
-router.post('/carimgupload',adminauth, upload.array("img",10), carimgupload)
+//router.post('/carimgupload',adminauth, upload.array("img",10), carimgupload)
+
+router.post('/carimgupload',adminauth, upload.array("img",10), carwithimgupload)
 router.delete('/:vehicle_id',adminauth,delVehicleImg)
 
 //new car

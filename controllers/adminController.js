@@ -73,29 +73,64 @@ async function logout(req,res){
 }
 
 
-async function carimgupload(req, res) {
+// async function carimgupload(req, res) {
+//     try {
+//         const { vehicle_id } = req.params
+
+//         if (!req.files || req.files.length === 0) {
+//             return res.status(400).json({ error: "Nincs feltöltött kép" })
+//         }
+
+//         const results = []
+
+//         for (const file of req.files) {
+//             const img = `uploads/${vehicle_id}/${file.filename}`
+//             console.log(img)
+
+//             const result = await insertVehicleImg(vehicle_id, img)
+//             results.push(result)
+//         }
+
+//         res.status(201).json({message: "Sikeres feltöltés",uploaded: req.files.length})
+
+//     } catch (err) {
+//         console.log(err)
+//         return res.status(500).json({ error: "Hiba a feltöltésen", err })
+//     }
+// }
+async function carwithimgupload(req, res) {
     try {
-        const { vehicle_id } = req.params
+        const { category_id, brand, model, color, transmission, pass_number } = req.body;
 
-        if (!req.files || req.files.length === 0) {
-            return res.status(400).json({ error: "Nincs feltöltött kép" })
+        // 1. insert vehicle
+        const vehicle = await insernewvehicle(
+            category_id,
+            brand,
+            model,
+            color,
+            transmission,
+            pass_number
+        );
+
+        const vehicle_id = vehicle.insertId;
+
+        // 2. insert images
+        if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                const img = `uploads/${vehicle_id}/${file.filename}`;
+                await insertVehicleImg(vehicle_id, img);
+            }
         }
 
-        const results = []
-
-        for (const file of req.files) {
-            const img = `uploads/${vehicle_id}/${file.filename}`
-            console.log(img)
-
-            const result = await insertVehicleImg(vehicle_id, img)
-            results.push(result)
-        }
-
-        res.status(201).json({message: "Sikeres feltöltés",uploaded: req.files.length})
+        res.status(201).json({
+            message: "Sikeres feltöltés",
+            vehicle_id: vehicle_id,
+            uploaded: req.files ? req.files.length : 0
+        });
 
     } catch (err) {
-        console.log(err)
-        return res.status(500).json({ error: "Hiba a feltöltésen", err })
+        console.log(err);
+        res.status(500).json({ error: "Hiba a feltöltésen" });
     }
 }
 
@@ -137,4 +172,4 @@ async function banuser(req,res){
 }
 
 
-module.exports = {login, whoAmI,logout,carimgupload,getcarImg,delVehicleImg, banuser}
+module.exports = {login, whoAmI,logout,carimgupload,getcarImg,delVehicleImg, banuser,carwithimgupload}
