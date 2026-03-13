@@ -5,9 +5,9 @@ const config=require('../config/dotenvConfig')
 
 async function insernewcar(req,res){
     try {
-        const {category_id, Brand, model, color, transmission, pass_number} = req.params
-        console.log(category_id, Brand, model, color, transmission, pass_number);
-        const result = await insernewvehicle(category_id, Brand, model, color, transmission, pass_number)
+        const {category_id, Brand, model, color, transmission, license_plate, year,price_per_day} = req.params
+        console.log(category_id, Brand, model, color, transmission, license_plate,year,price_per_day);
+        const result = await insernewvehicle(category_id, Brand, model, color, transmission, license_plate,year,price_per_day)
         console.log(result);
         res.status(201).json({message:"Sikeres feltöltés"})
 
@@ -19,9 +19,9 @@ async function insernewcar(req,res){
 
 async function editcar(req,res){
     try {
-        const {category_id, Brand, model, color, transmission, pass_number,vehicle_id} = req.params
-        console.log(category_id, Brand, model, color, transmission, pass_number,vehicle_id);
-        const result = await editvehicle(category_id, Brand, model, color, transmission, pass_number,vehicle_id)
+        const {category_id, Brand, model, color, transmission, license_plate,year,price_per_day,vehicle_id} = req.params
+        console.log(category_id, Brand, model, color, transmission, license_plate,year,price_per_day,vehicle_id);
+        const result = await editvehicle(category_id, Brand, model, color, transmission, license_plate,year,price_per_day,vehicle_id)
         console.log(result);
         res.status(201).json({message:"Sikeres modisitás"})
 
