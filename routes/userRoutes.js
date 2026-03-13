@@ -18,12 +18,12 @@ router.post('/logout', auth, logout)
 router.get('/userprofile', auth, showuserprofile)
 
 
-router.get('/newuserprofile', auth, useruploadpic.single("img"), newuserprofilepic)
+router.post('/newuserprofile/:user_id', auth, useruploadpic.single("img"), newuserprofilepic)
 
 
-router.put('/edituserprofile', auth, edituser)
+router.put('/edituserprofile/:user_id', auth, edituser)
 
-router.delete('/deleteuser',auth,deleteuser)
+router.delete('/deleteuser/:user_id',auth,deleteuser)
 
 
 module.exports = router
