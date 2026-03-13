@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt')
 const jwt=require('jsonwebtoken')
 const {findByEmail,isValidEmail, Banusermod} = require('../models/adminModel.js')
 const {insertVehicleImg,allVehicleImg,delCarImg}=require('../models/carImgModel.js')
+const {insernewvehicle}=require('../models/cardataModel.js')
 const config=require('../config/dotenvConfig')
 
 const cookieOpts={
@@ -72,49 +73,21 @@ async function logout(req,res){
     }
 }
 
-
-// async function carimgupload(req, res) {
-//     try {
-//         const { vehicle_id } = req.params
-
-//         if (!req.files || req.files.length === 0) {
-//             return res.status(400).json({ error: "Nincs feltöltött kép" })
-//         }
-
-//         const results = []
-
-//         for (const file of req.files) {
-//             const img = `uploads/${vehicle_id}/${file.filename}`
-//             console.log(img)
-
-//             const result = await insertVehicleImg(vehicle_id, img)
-//             results.push(result)
-//         }
-
-//         res.status(201).json({message: "Sikeres feltöltés",uploaded: req.files.length})
-
-//     } catch (err) {
-//         console.log(err)
-//         return res.status(500).json({ error: "Hiba a feltöltésen", err })
-//     }
-// }
 async function carwithimgupload(req, res) {
     try {
-        const { category_id, brand, model, color, transmission, pass_number } = req.body;
+        const { category_id, brand, model, color, transmission, license_plate,year } = req.body;
 
-        // 1. insert vehicle
         const vehicle = await insernewvehicle(
             category_id,
             brand,
             model,
             color,
             transmission,
-            pass_number
-        );
+            license_plate,
+            year);
 
         const vehicle_id = vehicle.insertId;
 
-        // 2. insert images
         if (req.files && req.files.length > 0) {
             for (const file of req.files) {
                 const img = `uploads/${vehicle_id}/${file.filename}`;
@@ -172,4 +145,6 @@ async function banuser(req,res){
 }
 
 
-module.exports = {login, whoAmI,logout,carimgupload,getcarImg,delVehicleImg, banuser,carwithimgupload}
+
+
+module.exports = {login, whoAmI,logout,getcarImg,delVehicleImg, banuser,carwithimgupload}

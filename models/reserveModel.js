@@ -8,7 +8,7 @@ async function reservation(user_id) {
 }
 
 async function newreservation(user_id,vehicle_id,pickup_date,return_date) {
-    const sql= 'INSERT INTO `reservations`(`reservation_id`, `user_id`, `vehicle_id`, `pickup_date`, `return_date`, `status`, `reservation_date`) VALUES (NULL,?,?,?,?,"lefoglalva",CURRENT_TIMESTAMP)'
+    const sql= 'INSERT INTO `reservations`(`reservation_id`, `user_id`, `vehicle_id`, `pickup_date`, `return_date`, `status`, `created_at`) VALUES (NULL,?,?,?,?,"lefoglalva",CURRENT_TIMESTAMP)'
     const [result] = await db.query(sql, [user_id,vehicle_id,pickup_date,return_date]);
     console.log(result);
     return result
