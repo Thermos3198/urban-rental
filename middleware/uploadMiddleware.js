@@ -15,7 +15,7 @@ const storage = multer.diskStorage({
             return cb (new Error('Hiányzsik a kocsi id'),null)
         }
 
-        const uploadDir = path.join(process.cwd(), "uploads",String(vehicle_id))
+        const uploadDir = path.join(process.cwd(), "carimgs",String(vehicle_id))
        
 
         try {

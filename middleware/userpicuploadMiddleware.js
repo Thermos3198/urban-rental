@@ -13,7 +13,7 @@ const storage = multer.diskStorage({
             return cb (new Error('Hiányzsik a user id'),null)
         }
 
-        const uploadDir = path.join(process.cwd(), "uploads",String(user_id))
+        const uploadDir = path.join(process.cwd(), "userpics",String(user_id))
        
 
         try {
@@ -26,7 +26,7 @@ const storage = multer.diskStorage({
 
     filename: (req,file,cb)=>{
         const now = new Date().toISOString().split('T')[0]
-        return cb(null,`${file.originalname}-${now}`)
+        return cb(null,`${now}-${file.originalname}`)
     }
 })
 
