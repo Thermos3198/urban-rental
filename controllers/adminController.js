@@ -16,12 +16,12 @@ const cookieOpts={
 async function login(req,res){
     try {
         const {email,psw}=req.body
-
+        console.log(email,psw);
         if(!email||!psw){
             return res.status(400).json({error:"email és jelszo kötelezö"})
         }
         const exists = await findByEmail(email)
-
+        console.log(exists);
         if(!isValidEmail(email)){
             return res.status(400).json({error:"Érvénytelen email formátum"})
         }
@@ -33,8 +33,12 @@ async function login(req,res){
         if(!exists) {
             return res.status(401).json({error: 'hibás email'})
         }
-        const ok=await bcrypt.compare(psw,exists.psw)
+        console.log("psw:", psw)
+        console.log("exists.psw:", exists?.psw)
 
+        const ok=await bcrypt.compare(psw,exists.password)
+
+        console.log(ok);
         if(!ok){
             return res.status(401).json({error:'Hibás jelszó'})
         }
@@ -43,13 +47,13 @@ async function login(req,res){
             config.JWT_SECRET,
             {expiresIn:config.JWT_EXPIRES_IN}
         )
-
+        console.log(token);
         res.cookie(config.ADMINCOOKIE_NAME,token, cookieOpts)
         return res.status(200).json({message:'Sikeres login'})
 
-        //console.log(ok);
 
     } catch (err) {
+        console.log(err);
         return res.status(500).json({error:'belepesi hiba',err})
     }
 }
@@ -57,9 +61,11 @@ async function login(req,res){
 async function whoAmI(req,res){
     try {
         const {user_id,username,email,role}=req.user
-        //console.log(user_id,username,email,role);
-        return res.status(200).json({user_id:user_id,username:username,email:email,role:role,created_at:exists.created_at})
+        console.log(user_id,username,email,role);
+        const exists = await findByEmail(email)
+        return res.status(200).json({user_id:exists.user_id,username:exists.username,email:exists.email,role:exists.role,created_at:exists.created_at})
     } catch (err) {
+        console.log(err);
         return res.status(500).json({error:'whoami server hiba'})
     }
 }
@@ -75,8 +81,8 @@ async function logout(req,res){
 
 async function carwithimgupload(req, res) {
     try {
-        const { category_id, brand, model, color, transmission, license_plate,year } = req.body;
-
+        const { category_id, brand, model, color, transmission, license_plate, year,price_per_day} = req.body;
+        console.log(category_id, brand, model, color, transmission, license_plate, year,price_per_day);
         const vehicle = await insernewvehicle(
             category_id,
             brand,
@@ -84,9 +90,13 @@ async function carwithimgupload(req, res) {
             color,
             transmission,
             license_plate,
-            year);
+            year,
+            price_per_day
+        );
 
         const vehicle_id = vehicle.insertId;
+        console.log(vehicle);
+        console.log(vehicle.insertId);
 
         if (req.files && req.files.length > 0) {
             for (const file of req.files) {
