@@ -5,7 +5,7 @@ const config=require('../config/dotenvConfig')
 
 async function viewARs(req,res){
     try {
-        const result = await Adminreservation()
+        const [result] = await Adminreservation()
         console.log(result);
         res.status(201).json({message:"Sikeres lekérés",result})
     } catch (err) {
@@ -18,7 +18,7 @@ async function UARs(req,res){
     try {
         const {vehicle_id,pickup_date,return_date,status,reservation_id} = req.params
         console.log(vehicle_id,pickup_date,return_date,status,reservation_id);
-        const result = await Adminupdatereservation(vehicle_id,pickup_date,return_date,status,reservation_id)
+        const [result] = await Adminupdatereservation(vehicle_id,pickup_date,return_date,status,reservation_id)
         console.log(result);
         res.status(201).json({message:"Sikeres modisitás"})
     } catch (err) {
@@ -31,7 +31,7 @@ async function DARs(req,res){
     try {
         const {reservation_id} = req.params
         console.log(reservation_id);
-        const result = await Admindeletereservation(reservation_id)
+        const [result] = await Admindeletereservation(reservation_id)
         console.log(result);
         res.status(201).json({message:"Sikeres delete"})
     } catch (err) {

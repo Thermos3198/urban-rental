@@ -5,7 +5,7 @@ const config=require('../config/dotenvConfig')
 //not done yet
 async function cheapcars(req,res){
     try {
-        const result = await CFirstCars()
+        const [result] = await CFirstCars()
         console.log(result);
         res.status(201).json({message:"Sikeres lekérés",result})
     } catch (err) {

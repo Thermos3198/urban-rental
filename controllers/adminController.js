@@ -1,9 +1,10 @@
 const bcrypt = require('bcrypt')
 const jwt=require('jsonwebtoken')
-const {findByEmail,isValidEmail, Banusermod} = require('../models/adminModel.js')
+const {findByEmail,isValidEmail} = require('../models/adminModel.js')
 const {insertVehicleImg,allVehicleImg,delCarImg}=require('../models/carImgModel.js')
-const {insernewvehicle}=require('../models/cardataModel.js')
 const config=require('../config/dotenvConfig')
+const {insernewvehicle,deletevehicle,editvehicle,getcardata} = require('../models/cardataModel')
+const {viewalluser,adminedituser,Banusermod} = require('../models/userModel.js')
 
 const cookieOpts={
     httpOnly:true,
@@ -100,7 +101,7 @@ async function carwithimgupload(req, res) {
 
         if (req.files && req.files.length > 0) {
             for (const file of req.files) {
-                const img = `uploads/${vehicle_id}/${file.filename}`;
+                const img = `carimgs/${vehicle_id}/${file.filename}`;
                 await insertVehicleImg(vehicle_id, img);
             }
         }
@@ -119,9 +120,8 @@ async function carwithimgupload(req, res) {
 
 async function delVehicleImg(req,res) {
     try {
-        const {img} = req.body
         const {vehicle_id} = req.params 
-        const result = await delCarImg(vehicle_id,img)
+        const [result] = await delCarImg(vehicle_id)
         console.log(result);
         res.status(200).json({message:"Sikeres törlés"})
     } catch (err) {
@@ -131,30 +131,99 @@ async function delVehicleImg(req,res) {
 }
 
 
-async function getcarImg(req,res) {
+
+
+async function deletewholevehicle(req,res){
     try {
-        const result = await allVehicleImg()
+        const {vehicle_id} = req.params
+        console.log(vehicle_id);
+        const [result] = await deletevehicle(vehicle_id)
         console.log(result);
-        res.status(200).json({result})
+        if(result.affectedRows===0){
+            return res.status(404).json({message:"Nem létezik ilyen"})
+        }
+        else{
+            res.status(204).json({message:"Sikeres törlés"})
+        }
+        
     } catch (err) {
         console.log(err);
-        res.status(500).json({error:"Nem sikerült lekérdezni az autokat",err})
+        return res.status(500).json({ error: "Hiba a törléskor", err })
+    }
+}
+
+async function editcar(req,res){
+    try {
+        const {vehicle_id}=req.params
+        const {brand, model, color, transmission, license_plate, year, price_per_day}= req.body
+        console.log(brand, model, color, transmission, license_plate,year,price_per_day,vehicle_id);
+        const [result] = await editvehicle(brand, model, color, transmission, license_plate,year,price_per_day,vehicle_id)
+        console.log(result);
+        if(result.affectedRows===1){
+            res.status(200).json({message:"Sikeres modisitás"})
+        }
+        else{
+            return res.status(404).json({message:"Nem található"})
+        }
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ error: "Hiba a modisitáskor", err })
     }
 }
 
 
+async function showcdwi(req,res){
+    try {
+        const [result]=await getcardata()
+        res.status(200).json({message:"Sikeres lekérés",result})
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({error:"Nem sikerült lekérni",err})
+    }
+}
 
+async function allusers(req,res){
+    try {
+        const [result]=await viewalluser()
+        res.status(200).json({message:"Sikeres lekérés",result})
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({error:"Nem sikerült lekérdezni",err})
+    }
+}
+async function editoneuser(req,res){
+    try {
+        const {user_id}=req.params
+        const {username,email,password,role}=req.body
+        const [result]=await adminedituser(username,email,password,role,user_id)
+        console.log(result);
+        if(result.affectedRows===1){
+            res.status(200).json({message:"Sikeres modisitás"})
+        }
+        else{
+            console.log('miért');
+            res.status(404).json({message:"Nem található"})
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({error:"Nem sikerült modisitani",err})
+    }
+}
 async function banuser(req,res){
     try {
         const {user_id}=req.params
-        const result=await Banusermod(user_id)
+        const [result]=await Banusermod(user_id)
+        if(result.affectedRows===0){
+            return res.status(404).json({message:"Nem létezik ilyen"})
+        }
+        else{
+            res.status(204).json({message:"Sikeres törlés"})
+        }
+        
     } catch (err) {
         console.log(err);
         res.status(500).json({error:"Nem sikerült törölni",err})
     }
 }
 
-
-
-
-module.exports = {login, whoAmI,logout,getcarImg,delVehicleImg, banuser,carwithimgupload}
+module.exports = {login, whoAmI,logout,delVehicleImg, banuser,carwithimgupload,deletewholevehicle,editcar,showcdwi,allusers,editoneuser}
