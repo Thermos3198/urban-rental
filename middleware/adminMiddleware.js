@@ -1,17 +1,11 @@
 const jwt=require('jsonwebtoken')
 const config=require('../config/dotenvConfig')
 
-function adminauth(req,res,next){
-    const token=req.cookies?.[config.ADMINCOOKIE_NAME]
-    if(!token){
-        return res.status(401).json({error: 'nincs cookie'})
+function admin(req,res,next){
+    
+    if(req.user.role!=="admin"){
+        return res.status(409).json({error: 'nem vagy admin'})
     }
-    try {
-        req.user=jwt.verify(token,config.JWT_SECRET)
-        //console.log(req.user);
-        next()
-    } catch (err) {
-        return res.status(401).json({error: 'cookie error'})
-    }
+    next()
 }
-module.exports={adminauth}
+module.exports={admin}

@@ -12,3 +12,6 @@ router.put('/updatereservation', adminauth, UARs)
 router.delete('/deletereservation', adminauth, DARs)
 
 module.exports = router 
+
+
+//move the whole thing under admin 

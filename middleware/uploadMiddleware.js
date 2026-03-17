@@ -46,4 +46,6 @@ const upload = multer({
     }
 })
 
+//this one handles the car img upload, it creates a folder with the vehicle id and uploads the img there, it also checks if the file is an image and if it's not too big
+
 module.exports = {upload}
