@@ -8,8 +8,8 @@ async function getcardata() {
 }
 
 async function insernewvehicle(category_id, brand, model, color, transmission, license_plate,year,price_per_day){
-    const sql='INSERT INTO `vehicles`(`category_id`, `brand`, `model`, `color`, `transmission`, `license_plate`, `year`, `price_per_day`) VALUES (?,?,?,?,?,?,?,?)'
-    const [result] = await db.query(sql,[category_id, brand, model, color, transmission, license_plate,year,price_per_day]);
+    const sql='INSERT INTO `vehicles`(`vehicle_id`,`category_id`, `brand`, `model`, `color`, `transmission`, `license_plate`, `year`, `price_per_day`) VALUES (NULL,?,?,?,?,?,?,?,?)'
+    const [result] = await db.query(sql,[category_id, brand, model, color, transmission, license_plate, year,price_per_day]);
     console.log(result);
     return result
 }

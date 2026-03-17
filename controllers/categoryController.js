@@ -5,7 +5,7 @@ const config=require('../config/dotenvConfig')
 
 async function addNewC(req,res){
     try {
-        const {name} = req.params
+        const {name} = req.body
         console.log(name);
         const result = await addNewcategory(name)
         console.log(result);
