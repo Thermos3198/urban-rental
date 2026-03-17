@@ -80,41 +80,51 @@ async function logout(req,res){
 }
 
 async function carwithimgupload(req, res) {
-    try {
-        const { category_id, brand, model, color, transmission, license_plate, year,price_per_day} = req.body;
-        console.log(category_id, brand, model, color, transmission, license_plate, year,price_per_day);
-        const vehicle = await insernewvehicle(
-            category_id,
-            brand,
-            model,
-            color,
-            transmission,
-            license_plate,
-            year,
-            price_per_day
-        );
+  try {
+    const userId = req.params.userId; 
+    const {
+      category_id,
+      brand,
+      model,
+      color,
+      transmission,
+      license_plate,
+      year,
+      price_per_day
+    } = req.body;
 
-        const vehicle_id = vehicle.insertId;
-        console.log(vehicle);
-        console.log(vehicle.insertId);
+    console.log({ category_id, brand, model, color, transmission, license_plate, year, price_per_day });
 
-        if (req.files && req.files.length > 0) {
-            for (const file of req.files) {
-                const img = `uploads/${vehicle_id}/${file.filename}`;
-                await insertVehicleImg(vehicle_id, img);
-            }
-        }
+    const vehicle = await insernewvehicle(
+      category_id,
+      brand,
+      model,
+      color,
+      transmission,
+      license_plate,
+      year,
+      price_per_day
+    );
 
-        res.status(201).json({
-            message: "Sikeres feltöltés",
-            vehicle_id: vehicle_id,
-            uploaded: req.files ? req.files.length : 0
-        });
+    const vehicle_id = vehicle.insertId;
 
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ error: "Hiba a feltöltésen" });
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const imgPath = `uploads/${vehicle_id}/${file.filename}`;
+        await insertVehicleImg(vehicle_id, imgPath);
+      }
     }
+
+    res.status(201).json({
+      message: "Sikeres feltöltés",
+      vehicle_id,
+      uploaded: req.files ? req.files.length : 0
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Hiba a feltöltésen" });
+  }
 }
 
 async function delVehicleImg(req,res) {
