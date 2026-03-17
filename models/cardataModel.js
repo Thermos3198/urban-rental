@@ -1,7 +1,7 @@
 const db = require('../db/db')
 
 async function getcardata() {
-    const sql= 'SELECT  vehicle_category.name, vehicles.brand, vehicles.model, vehicles.color, vehicles.transmission, vehicles.license_plate FROM `vehicles`INNER JOIN vehicle_category USING (category_id)'
+    const sql= 'SELECT * FROM `vehicles` JOIN vehicles_img USING (vehicle_id)'
     const [result] = await db.query(sql);
     console.log(result);
     return result
@@ -14,9 +14,9 @@ async function insernewvehicle(category_id, brand, model, color, transmission, l
     return result
 }
 
-async function editvehicle(category_id, brand, model, color, transmission, license_plate,year,price_per_day,vehicle_id){
-    const sql='UPDATE `vehicles` SET `category_id`=?,`brand`=?,`model`=?,`color`=?,`transmission`=?,`license_plate`=?,`year`=? , `price_per_day`=? WHERE `vehicle_id`=?'
-    const [result] = await db.query(sql,[category_id, brand, model, color, transmission, license_plate,year,price_per_day,vehicle_id]);
+async function editvehicle(brand, model, color, transmission, license_plate,year,price_per_day,vehicle_id){
+    const sql='UPDATE `vehicles` SET `brand`=?,`model`=?,`color`=?,`transmission`=?,`license_plate`=?,`year`=? , `price_per_day`=? WHERE `vehicle_id`=?'
+    const [result] = await db.query(sql,[brand, model, color, transmission, license_plate,year,price_per_day,vehicle_id]);
     console.log(result);
     return result
 }
@@ -28,4 +28,4 @@ async function deletevehicle(vehicle_id){
     return result
 }
 
-module.exports = {getcardata, insernewvehicle,editvehicle,deletevehicle}
+module.exports = {getcardata,editvehicle,deletevehicle,insernewvehicle}

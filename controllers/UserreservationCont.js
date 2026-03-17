@@ -7,7 +7,7 @@ async function viewRs(req,res){
     try {
         const {user_id} = req.params
         console.log(user_id);
-        const result = await reservation(user_id)
+        const [result] = await reservation(user_id)
         console.log(result);
         res.status(201).json({message:"Sikeres lekérés",result})
 
@@ -20,7 +20,7 @@ async function NewRs(req,res){
     try {
         const {user_id,vehicle_id,pickup_date,return_date} = req.params
         console.log(user_id,vehicle_id,pickup_date,return_date);
-        const result = await newreservation(user_id,vehicle_id,pickup_date,return_date)
+        const [result] = await newreservation(user_id,vehicle_id,pickup_date,return_date)
         console.log(result);
         res.status(201).json({message:"Sikeres feltöltés"})
 
@@ -34,7 +34,7 @@ async function URs(req,res){
     try {
         const {vehicle_id,pickup_date,return_date,status} = req.params
         console.log(vehicle_id,pickup_date,return_date,status);
-        const result = await updatereservation(vehicle_id,pickup_date,return_date,status)
+        const [result] = await updatereservation(vehicle_id,pickup_date,return_date,status)
         console.log(result);
         res.status(201).json({message:"Sikeres modisitás"})
 
@@ -48,7 +48,7 @@ async function Drs(req,res){
     try {
         const {reservation_id} = req.params
         console.log(reservation_id);
-        const result = await deletereservation(reservation_id)
+        const [result] = await deletereservation(reservation_id)
         console.log(result);
         res.status(201).json({message:"Sikeres delete"})
     } catch (err) {

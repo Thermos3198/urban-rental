@@ -7,7 +7,7 @@ async function addNewC(req,res){
     try {
         const {name} = req.body
         console.log(name);
-        const result = await addNewcategory(name)
+        const [result] = await addNewcategory(name)
         console.log(result);
         res.status(201).json({message:"Sikeres feltöltés"})
 
@@ -19,11 +19,17 @@ async function addNewC(req,res){
 
 async function updateC(req,res){
     try {
-        const {name,category_id} = req.params
+        const {category_id} = req.params
+        const {name} = req.body
         console.log(name,category_id);
-        const result = await updateCategory(name,category_id)
+        const [result] = await updateCategory(name,category_id)
         console.log(result);
-        res.status(201).json({message:"Sikeres modisitás"})
+        if(result.affectedRows===0){
+            return res.status(404).json({message:"Nem található"})
+        }
+        else{
+            return res.status(200).json({message:"Sikeres modisitás"})
+        }
 
     } catch (err) {
         console.log(err);
@@ -35,9 +41,14 @@ async function deleteC(req,res){
     try {
         const {category_id} = req.params
         console.log(category_id);
-        const result = await deleteCategory(category_id)
+        const [result] = await deleteCategory(category_id)
         console.log(result);
-        res.status(201).json({message:"Sikeres delete"})
+        if(result.affectedRows===0){
+            return res.status(404).json({message:"Nem található"})
+        }
+        else{
+            return res.status(201).json({message:"Sikeres törlés"})
+        }
     } catch (err) {
         console.log(err);
         return res.status(500).json({ error: "Hiba a törléskor", err })

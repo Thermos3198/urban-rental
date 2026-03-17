@@ -12,10 +12,4 @@ function isValidEmail(email) {
     return emailRegex.test(email);
 }
 
-async function Banusermod(user_id) {
-    const [result]=await db.query('DELETE FROM `users` WHERE `user_id`=?',[user_id])
-    console.log(result);
-    return result
-}
-
-module.exports = {findByEmail,isValidEmail, Banusermod}
+module.exports = {findByEmail,isValidEmail}

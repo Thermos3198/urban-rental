@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const { findByEmail, createUser, isValidEmail,insertUserImg, showuserprofilepic,edituserdata,deleteuserdata} = require('../models/userModel.js')
+const { findByEmail, createUser, isValidEmail,insertUserImg, showuserprofilepic,edituserdata,deleteuserdata,getallcarswithimg} = require('../models/userModel.js')
 const config = require('../config/dotenvConfig')
 
 const cookieOpts = {
@@ -136,9 +136,8 @@ async function newuserprofilepic(req,res){
     try {
         const {user_id} = req.params
         console.log(user_id);
-        const img = `uploads/${user_id}/${req.file.filename}` 
-
-        const result = await insertUserImg(user_id,img)
+        const img = `userpics/${user_id}/${req.file.filename}` 
+        const [result] = await insertUserImg(user_id,img)
         console.log(result);
         res.status(201).json({message:"Sikeres feltöltés"})
 
@@ -153,7 +152,7 @@ async function edituser(req,res){
         const {user_id} = req.params
         const {username,email,password} = req.body
         console.log(username,email,password,user_id);
-        const result = await edituserdata(username,email,password,user_id)
+        const [result] = await edituserdata(username,email,password,user_id)
         console.log(result);
         res.status(201).json({message:"Sikeres modisitás"})
     } catch (err) {
@@ -167,7 +166,7 @@ async function deleteuser(req,res){
     try {
         const {user_id} = req.params
         console.log(user_id);
-        const result = await deleteuserdata(user_id)
+        const [result] = await deleteuserdata(user_id)
         console.log(result);
         res.status(200).json({message:"Sikeres törlés"})
     } catch (err) {
@@ -177,4 +176,19 @@ async function deleteuser(req,res){
 }
 
 
-module.exports = { register, login, whoAmI, logout, showuserprofile, newuserprofilepic,edituser,deleteuser } 
+
+async function viewcars(req,res){
+    try {
+        const [result] = await getallcarswithimg()
+        console.log(result);
+        res.status(200).json({message:"Sikeres lekéres",result})
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ error: "Hiba a törléskor", err })
+    }
+}
+
+
+
+
+module.exports = { register, login, whoAmI, logout, showuserprofile, newuserprofilepic,edituser,deleteuser,viewcars } 

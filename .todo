@@ -4,8 +4,6 @@ working on this:
         filter by different types
         manuar or auto
         brand
-
-
         
 postman végpontok 
 frontend isk
@@ -13,6 +11,8 @@ frontend isk
 rentals
     handle the actual rental and insertt it into the table
 
+userreservation put it under user
+admin reservation put under admin 
 
 maybe reconsider carimgroutes and  vehicledataroutes for a compined soulution
 
