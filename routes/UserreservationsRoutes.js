@@ -15,3 +15,6 @@ router.put('/updatereservation', auth, URs)
 router.delete('/deletereservation', auth, Drs)
 
 module.exports = router 
+
+
+//move this under user 
