@@ -12,7 +12,6 @@ app.use(cookieParser())
 const userRoutes = require('./routes/userRoutes.js')
 const adminRoutes=require('./routes/adminRoutes.js')
 
-const UserreservationsRoutes=require('./routes/UserreservationsRoutes.js')
 const RentalRoutes=require('./routes/RentalRoutes.js')
 
 const filtercars=require('./routes/filterCarsRoutes.js')
@@ -20,7 +19,6 @@ const filtercars=require('./routes/filterCarsRoutes.js')
 app.use('/users', userRoutes)
 app.use('/admin',adminRoutes)
 
-app.use('/api/reservations',UserreservationsRoutes)
 app.use('/api/rentals',RentalRoutes)
 
 //filters the search

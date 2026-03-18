@@ -4,7 +4,7 @@ const {admin}=require('../middleware/adminMiddleware.js')
 //good
 const {login, whoAmI, logout, banuser, delVehicleImg, carwithimgupload ,deletewholevehicle,editcar,showcdwi,allusers,editoneuser} = require('../controllers/adminController.js')
 
-const {addNewC, updateC, deleteC} = require('../controllers/categoryController.js')
+const {addNewC, updateC, deleteC,viewallC} = require('../controllers/categoryController.js')
 
 const { auth } = require('../middleware/userMiddleware.js')
 
@@ -25,6 +25,7 @@ router.delete('/deletewholecar/:vehicle_id',auth,admin,deletewholevehicle)
 router.put('/editvehicle/:vehicle_id',auth,admin,editcar)
 
 //vehicle category
+router.get('/allcategory', auth,admin, viewallC)
 router.post('/newcategory', auth,admin, addNewC)
 router.put('/updatecategory/:category_id', auth,admin, updateC)
 router.delete('/deletecategory/:category_id', auth,admin, deleteC)

@@ -1,7 +1,18 @@
 const bcrypt = require('bcrypt')
 const jwt=require('jsonwebtoken')
-const {addNewcategory,updateCategory,deleteCategory}=require('../models/categoryModel.js')
+const {viewallcategory,addNewcategory,updateCategory,deleteCategory}=require('../models/categoryModel.js')
 const config=require('../config/dotenvConfig')
+
+async function viewallC(req,res){
+    try {
+        const [result] = await viewallcategory()
+        console.log(result);
+        res.status(201).json({message:"Sikeres lekérés",result})
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ error: "Hiba a lekérésnél", err })
+    }
+}
 
 async function addNewC(req,res){
     try {
@@ -58,4 +69,4 @@ async function deleteC(req,res){
 
 
 
-module.exports = {addNewC,updateC,deleteC}
+module.exports = {addNewC,updateC,deleteC,viewallC}

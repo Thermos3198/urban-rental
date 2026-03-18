@@ -35,7 +35,7 @@ async function login(req,res){
             return res.status(401).json({error: 'hibás email'})
         }
         console.log("psw:", psw)
-        console.log("exists.psw:", exists?.psw)
+        console.log("exists.psw:", exists?.password)
 
         const ok=await bcrypt.compare(psw,exists.password)
 
@@ -49,7 +49,7 @@ async function login(req,res){
             {expiresIn:config.JWT_EXPIRES_IN}
         )
         console.log(token);
-        res.cookie(config.ADMINCOOKIE_NAME,token, cookieOpts)
+        res.cookie(config.COOKIE_NAME,token, cookieOpts)
         return res.status(200).json({message:'Sikeres login'})
 
 

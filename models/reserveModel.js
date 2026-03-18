@@ -11,11 +11,7 @@ async function checkAvailability(vehicle_id, pickup_date, return_date) {
     const sql = `SELECT * FROM reservations 
                  WHERE vehicle_id = ? 
                  AND status IN ('lefoglalva', 'active_rental')
-                 AND (
-                     (pickup_date < ? AND return_date > ?) OR
-                     (pickup_date < ? AND return_date > ?) OR
-                     (pickup_date >= ? AND return_date <= ?)
-                 )`
+                 AND ((pickup_date < ? AND return_date > ?) OR(pickup_date >= ? AND return_date <= ?))`
     const [conflicts] = await db.query(sql, [
         vehicle_id, 
         pickup_date, return_date,
