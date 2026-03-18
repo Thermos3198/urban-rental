@@ -16,7 +16,7 @@ router.get('/whoami', auth,admin,  whoAmI)
 router.post('/logout', auth,admin, logout)
 //carimg 
 //cardatawithimgupload
-router.post('/carwithimgupload/:vehicle_id',auth,admin, upload.array("img",10), carwithimgupload)
+router.post('/carwithimgupload', auth, admin, carwithimgupload)
 router.delete('/deletecarimg/:vehicle_id',auth,admin,delVehicleImg)
 
 //car
