@@ -1,18 +1,4 @@
-const bcrypt = require('bcrypt')
-const jwt=require('jsonwebtoken')
-const {CFirstCars, filterVehicles} = require('../models/filterModels.js')
-const config=require('../config/dotenvConfig')
-
-async function cheapcars(req,res){
-    try {
-        const [result] = await CFirstCars()
-        console.log(result);
-        res.status(201).json({message:"Sikeres lekérés",result})
-    } catch (err) {
-        console.log(err);
-        return res.status(500).json({ error: "Hiba a lekéréskor", err })
-    }
-}
+const {filterVehicles} = require('../models/filterModels.js')
 
 async function filterCars(req,res){
     try {
@@ -26,4 +12,4 @@ async function filterCars(req,res){
     }
 }
 
-module.exports = {cheapcars, filterCars}
+module.exports = {filterCars}

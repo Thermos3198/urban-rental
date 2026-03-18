@@ -1,10 +1,21 @@
-const {newrental, rental, adminrental, updaterental, deleterental, updatereservationstatus} = require('../models/rentalModel.js')
+const {newrental, myrental, allrentals, updaterental, deleterental, updatereservationstatus} = require('../models/rentalModel.js')
+
+async function viewARs(req, res) {
+    try {
+        const [result] = await allrentals()
+        console.log(result)
+        res.status(201).json({message: "Sikeres lekérés", result})
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json({error: "Hiba a lekéréskor", err})
+    }
+}
 
 async function viewRs(req, res) {
     try {
         const {user_id} = req.params
         console.log(user_id)
-        const [result] = await rental(user_id)
+        const [result] = await myrental(user_id)
         console.log(result)
         res.status(201).json({message: "Sikeres lekérés", result})
     } catch (err) {
@@ -13,25 +24,20 @@ async function viewRs(req, res) {
     }
 }
 
-async function viewARs(req, res) {
-    try {
-        const [result] = await adminrental()
-        console.log(result)
-        res.status(201).json({message: "Sikeres lekérés", result})
-    } catch (err) {
-        console.log(err)
-        return res.status(500).json({error: "Hiba a lekéréskor", err})
-    }
-}
 
 async function NewRs(req, res) {
     try {
-        const {reservation_id, vehicle_id, user_id, start_time, expected_return, damage_notes} = req.body
-        console.log(reservation_id, vehicle_id, user_id, start_time, expected_return, damage_notes)
-        const [result] = await newrental(reservation_id, vehicle_id, user_id, start_time, expected_return, damage_notes)
-        await updatereservationstatus(reservation_id, 'active_rental')
+        const {reservation_id, vehicle_id, user_id, start_time, expected_return, actual_return, status, damage_notes} = req.body
+
+        console.log(reservation_id, vehicle_id, user_id, start_time, expected_return, actual_return, status, damage_notes)
+
+        const [result] = await newrental(reservation_id, vehicle_id, user_id, start_time, expected_return, actual_return, status, damage_notes)
+
+        const [result2]=await updatereservationstatus('active_rental',reservation_id)
+
         console.log(result)
-        res.status(201).json({message: "Sikeres feltöltés"})
+        console.log(result2)
+        res.status(201).json({message: "Sikeres feltöltés",result,result2})
     } catch (err) {
         console.log(err)
         return res.status(500).json({error: "Hiba a feltöltésen", err})
@@ -40,11 +46,16 @@ async function NewRs(req, res) {
 
 async function URs(req, res) {
     try {
-        const {reservation_id, rental_id, status, actual_return, damage_notes} = req.body
-        console.log(reservation_id, rental_id, status, actual_return, damage_notes)
-        const [result] = await updaterental(reservation_id, rental_id, status, actual_return, damage_notes)
+        const {user_id} = req.params
+
+        const {reservation_id, vehicle_id, start_time, expected_return, actual_return, status, damage_notes} = req.body
+        
+        console.log(user_id)
+        console.log(reservation_id, vehicle_id, start_time, expected_return, actual_return, status, damage_notes)
+
+        const [result] = await updaterental(reservation_id, vehicle_id, start_time, expected_return, actual_return, status, damage_notes,user_id)
         if (status === 'completed') {
-            await updatereservationstatus(reservation_id, 'completed')
+            await updatereservationstatus('completed',reservation_id,)
         }
         console.log(result)
         res.status(201).json({message: "Sikeres modositás"})
@@ -66,5 +77,6 @@ async function Drs(req, res) {
         return res.status(500).json({error: "Hiba a törléskor", err})
     }
 }
+
 
 module.exports = {viewRs, viewARs, NewRs, URs, Drs}

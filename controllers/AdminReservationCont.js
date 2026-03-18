@@ -3,7 +3,7 @@ const jwt=require('jsonwebtoken')
 const {Adminreservation,Adminupdatereservation,Admindeletereservation}=require('../models/AdminreserveModel.js')
 const config=require('../config/dotenvConfig')
 
-async function viewARs(req,res){
+async function viewAdminreservations(req,res){
     try {
         const [result] = await Adminreservation()
         console.log(result);
@@ -14,25 +14,27 @@ async function viewARs(req,res){
     }
 }
 
-async function UARs(req,res){
+async function UAdminreservations(req,res){
     try {
-        const {vehicle_id,pickup_date,return_date,status,reservation_id} = req.params
-        console.log(vehicle_id,pickup_date,return_date,status,reservation_id);
+        const {user_id,vehicle_id,pickup_date,return_date,status,created_at } = req.body
+        const {reservation_id} = req.params
+        console.log(user_id,vehicle_id,pickup_date,return_date,status,created_at );
+        console.log(reservation_id);
         
         if (!pickup_date || !return_date) {
             return res.status(400).json({ error: "Pickup és return date kötelező" });
         }
 
-        const [result] = await Adminupdatereservation(vehicle_id,pickup_date,return_date,status,reservation_id)
+        const [result] = await Adminupdatereservation(user_id,vehicle_id,pickup_date,return_date,status,created_at,reservation_id)
         console.log(result);
-        res.status(201).json({message:"Sikeres modisitás"})
+        res.status(201).json({message:"Sikeres modisitás",result})
     } catch (err) {
         console.log(err);
         return res.status(500).json({ error: "Hiba a modisitáskor", err })
     }
 }
 
-async function DARs(req,res){
+async function DAdminreservations(req,res){
     try {
         const {reservation_id} = req.params
         console.log(reservation_id);
@@ -47,4 +49,4 @@ async function DARs(req,res){
 
 
 
-module.exports = {viewARs,DARs,UARs}
+module.exports = {viewAdminreservations,UAdminreservations,DAdminreservations}
