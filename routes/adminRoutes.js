@@ -35,6 +35,37 @@ router.get('/alluser',auth,admin, allusers)
 router.put('/editoneuser/:user_id',auth,admin, editoneuser)
 router.delete('/deleteoneuser/:user_id',auth,admin, banuser)
 
+//admin side revervation
+//admin router that handles the admin edittting a reservation a car
+
+const {viewAdminreservations,UAdminreservations,DAdminreservations} = require('../controllers/AdminReservationCont.js')
+
+router.get('/reservation',auth,admin, viewAdminreservations)
+
+router.put('/updatereservation/:reservation_id', auth,admin, UAdminreservations)
+
+router.delete('/deletereservation/:reservation_id', auth,admin, DAdminreservations)
+
+
+
+//admin side rentals
+const {viewRs,viewARs,NewRs, URs, Drs} = require('../controllers/RentalController.js')
+
+
+router.get('/allrentals', auth,admin, viewARs)
+
+router.get('/rentals/:user_id', auth,admin, viewRs)
+
+router.post('/newrental', auth,admin, NewRs)
+
+router.put('/updaterental/:user_id', auth,admin, URs)
+
+router.delete('/deleterental', auth,admin, Drs)
+
+//filter
+const {filterCars} = require('../controllers/FilterController.js')
+
+router.post('/filter',auth,admin, filterCars)
 
 
 module.exports = router

@@ -1,14 +1,8 @@
 const db = require('../db/db')
 
-async function CFirstCars() {
-    const sql= 'SELECT * FROM `vehicles` ORDER BY `price_per_day` ASC'
-    const [result] = await db.query(sql);
-    console.log(result);
-    return result
-}
 
 async function filterVehicles(filters) {
-    let sql = 'SELECT * FROM `vehicles` WHERE 1=1'
+    let sql = 'SELECT * FROM `vehicles` JOIN vehicles_img USING (vehicle_id) WHERE 1=1'
     const params = []
 
     if (filters.brand && filters.brand.trim() !== '') {
@@ -52,4 +46,4 @@ async function filterVehicles(filters) {
     return result
 }
 
-module.exports = {CFirstCars, filterVehicles}
+module.exports = {filterVehicles}

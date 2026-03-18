@@ -40,7 +40,12 @@ router.put('/updatereservation', auth, UReservations)
 
 router.delete('/deletereservation', auth, DReservations)
 
-module.exports = router 
+
+//filter
+const {filterCars} = require('../controllers/FilterController.js')
+
+router.post('/filter',auth, filterCars)
+
 
 
 module.exports = router

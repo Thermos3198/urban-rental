@@ -3,7 +3,7 @@ const cookieParser=require('cookie-parser')
 const cors = require('cors')
 const app = express();
 app.use(cors({
-    origin: "http://127.0.0.1:5173",
+    origin: "http://localhost:5173",
     credentials: true
 }));
 app.use(express.json())
@@ -11,17 +11,13 @@ app.use(cookieParser())
 
 const userRoutes = require('./routes/userRoutes.js')
 const adminRoutes=require('./routes/adminRoutes.js')
-
-const RentalRoutes=require('./routes/RentalRoutes.js')
-
-const filtercars=require('./routes/filterCarsRoutes.js')
-
+const globalroute=require('./routes/notLoggedinRoutes.js')
+//logedin
 app.use('/users', userRoutes)
 app.use('/admin',adminRoutes)
 
-app.use('/api/rentals',RentalRoutes)
+//not loggedd in
+app.use('/global',globalroute)
 
-//filters the search
-app.use('/api/filtercars', filtercars)
 
 module.exports = app

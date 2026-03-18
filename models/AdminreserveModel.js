@@ -7,9 +7,9 @@ async function Adminreservation(user_id) {
     return result
 }
 
-async function Adminupdatereservation(vehicle_id,pickup_date,return_date,status,reservation_id){
-    const sql = 'UPDATE `reservations` SET `vehicle_id`=?,`pickup_date`=?,`return_date`=?,`status`=? WHERE `reservation_id`=?'
-    const [result] = await db.query(sql, [vehicle_id,pickup_date,return_date,status,reservation_id])
+async function Adminupdatereservation(user_id,vehicle_id,pickup_date,return_date,status,created_at,reservation_id){
+    const sql = 'UPDATE `reservations` SET `user_id`=?,`vehicle_id`=?,`pickup_date`=?,`return_date`=?,`status`=?,`created_at`=? WHERE `reservation_id`=?'
+    const [result] = await db.query(sql, [user_id,vehicle_id,pickup_date,return_date,status,created_at,reservation_id])
     console.log(result);
     return result
 }
