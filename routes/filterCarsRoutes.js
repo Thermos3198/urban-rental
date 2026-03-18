@@ -1,12 +1,11 @@
 const express = require('express')
 const {auth}=require('../middleware/userMiddleware.js')
 
-const {cheapcars} = require('../controllers/FilterController.js')
+const {cheapcars, filterCars} = require('../controllers/FilterController.js')
 
 const router = express.Router()
-//router that handles filtering
-router.post('/cheap', cheapcars)
 
-//not done yet
-//expent this more
+router.post('/cheap', cheapcars)
+router.post('/filter', filterCars)
+
 module.exports = router
