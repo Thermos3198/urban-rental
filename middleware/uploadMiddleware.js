@@ -5,17 +5,15 @@ const path = require('path')
 const MAX_FILE_SIZE = 1024 * 1024 * 20
 
 
-
 const storage = multer.diskStorage({
     destination: (req,file,cb) =>{
-        ;
-        const {vehicle_id} = req.params
+        const {license_plate} = req.params
         
-        if (!vehicle_id) {
-            return cb (new Error('Hiányzsik a kocsi id'),null)
+        if (!license_plate) {
+            return cb (new Error('Hiányzsik a licence plate'),null)
         }
 
-        const uploadDir = path.join(process.cwd(), "carimgs",String(vehicle_id))
+        const uploadDir = path.join(process.cwd(), "carimgs",String(license_plate))
        
 
         try {
