@@ -70,7 +70,7 @@ async function Banusermod(user_id) {
 }
 
 async function getallcarswithimg() {
-    const sql='SELECT * FROM `vehicles` JOIN vehicles_img USING (vehicle_id)'
+    const sql='SELECT * FROM `vehicles` JOIN vehicles_img USING (vehicle_id) GROUP BY vehicle_id'
     const [result]=await db.query(sql)
     console.log(result);
     return result

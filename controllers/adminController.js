@@ -101,7 +101,7 @@ async function carwithimgupload(req, res) {
 
         if (req.files && req.files.length > 0) {
             for (const file of req.files) {
-                const img = `carimgs/${vehicle_id}/${file.filename}`;
+                const img = `carimgs/${license_plate}/${file.filename}`;
                 await insertVehicleImg(vehicle_id, img);
             }
         }
@@ -109,6 +109,7 @@ async function carwithimgupload(req, res) {
         res.status(201).json({
             message: "Sikeres feltöltés",
             vehicle_id: vehicle_id,
+            license_plate:license_plate,
             uploaded: req.files ? req.files.length : 0
         });
 
@@ -175,7 +176,7 @@ async function editcar(req,res){
 async function showcdwi(req,res){
     try {
         const [result]=await getcardata()
-        res.status(200).json({message:"Sikeres lekérés",result})
+        res.status(200).json({result})
     } catch (err) {
         console.log(err);
         res.status(500).json({error:"Nem sikerült lekérni",err})

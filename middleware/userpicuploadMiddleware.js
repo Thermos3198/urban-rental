@@ -6,7 +6,6 @@ const MAX_FILE_SIZE = 1024 * 1024 * 10
 
 const storage = multer.diskStorage({
     destination: (req,file,cb) =>{
-        ;
         const {user_id} = req.params
         
         if (!user_id) {

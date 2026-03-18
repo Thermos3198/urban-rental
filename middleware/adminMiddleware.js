@@ -1,6 +1,3 @@
-const jwt=require('jsonwebtoken')
-const config=require('../config/dotenvConfig')
-
 function admin(req,res,next){
     
     if(req.user.role!=="admin"){
