@@ -11,7 +11,6 @@ const config = {
     DB_TIMEZONE: process.env.DB_TIMEZONE,
     JWT_SECRET: process.env.JWT_SECRET,
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN,
-    COOKIE_NAME: process.env.COOKIE_NAME,
-    ADMINCOOKIE_NAME:process.env.ADMINCOOKIE_NAME
+    COOKIE_NAME: process.env.COOKIE_NAME
 }
 module.exports = config

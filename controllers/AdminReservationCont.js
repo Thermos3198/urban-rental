@@ -18,6 +18,11 @@ async function UARs(req,res){
     try {
         const {vehicle_id,pickup_date,return_date,status,reservation_id} = req.params
         console.log(vehicle_id,pickup_date,return_date,status,reservation_id);
+        
+        if (!pickup_date || !return_date) {
+            return res.status(400).json({ error: "Pickup és return date kötelező" });
+        }
+
         const [result] = await Adminupdatereservation(vehicle_id,pickup_date,return_date,status,reservation_id)
         console.log(result);
         res.status(201).json({message:"Sikeres modisitás"})

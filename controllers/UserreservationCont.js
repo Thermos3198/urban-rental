@@ -16,16 +16,25 @@ async function viewRs(req,res){
         return res.status(500).json({ error: "Hiba a lekéréskor", err })
     }
 }
+
 async function NewRs(req,res){
     try {
         const {user_id,vehicle_id,pickup_date,return_date} = req.params
         console.log(user_id,vehicle_id,pickup_date,return_date);
+        
+        if (!pickup_date || !return_date) {
+            return res.status(400).json({ error: "Pickup és return date kötelező" });
+        }
+
         const [result] = await newreservation(user_id,vehicle_id,pickup_date,return_date)
         console.log(result);
         res.status(201).json({message:"Sikeres feltöltés"})
 
     } catch (err) {
         console.log(err);
+        if (err.message === 'Ez a jármű lefoglalt az adott időszakra') {
+            return res.status(409).json({ error: err.message });
+        }
         return res.status(500).json({ error: "Hiba a feltöltésen", err })
     }
 }
@@ -56,8 +65,5 @@ async function Drs(req,res){
         return res.status(500).json({ error: "Hiba a törléskor", err })
     }
 }
-
-
-
 
 module.exports = {viewRs,NewRs,Drs,URs}

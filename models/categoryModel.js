@@ -1,5 +1,10 @@
 const db = require('../db/db')
 
+async function viewallcategory() {
+    const sql='SELECT * FROM `vehicle_category`'
+    const [result] = await db.query(sql);
+    return result
+}
 async function addNewcategory(name) {
     const sql='INSERT INTO `vehicle_category`(`category_id`, `name`) VALUES (NULL,?)'
     const [result] = await db.query(sql,[name]);
@@ -18,4 +23,4 @@ async function deleteCategory(category_id) {
 }
 
 
-module.exports = {addNewcategory,updateCategory,deleteCategory}
+module.exports = {addNewcategory,updateCategory,deleteCategory,viewallcategory}
