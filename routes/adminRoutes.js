@@ -1,43 +1,71 @@
 const express = require('express')
-const { upload } = require('../middleware/uploadMiddleware.js')
-const { admin } = require('../middleware/adminMiddleware.js')
+const {upload}=require('../middleware/uploadMiddleware.js')
+const {admin}=require('../middleware/adminMiddleware.js')
 //good
-const { login, whoAmI, logout, banuser, delVehicleImg, carwithimgupload } = require('../controllers/adminController.js')
+const {login, whoAmI, logout, banuser, delVehicleImg, carwithimgupload ,deletewholevehicle,editcar,showcdwi,allusers,editoneuser} = require('../controllers/adminController.js')
 
-const { insernewcar, editcar, deletecar } = require('../controllers/cardataController.js')
+const {addNewC, updateC, deleteC,viewallC} = require('../controllers/categoryController.js')
 
-const { addNewC, updateC, deleteC } = require('../controllers/categoryController.js')
 const { auth } = require('../middleware/userMiddleware.js')
 
 const router = express.Router()
 //basic 
+
 router.post('/login', login)
-router.get('/whoami', auth, whoAmI)
-router.post('/logout', auth, logout)
+router.get('/whoami', auth,admin,  whoAmI)
+router.post('/logout', auth,admin, logout)
 //carimg 
-//router.post('/carimgupload',adminauth, upload.array("img",10), carimgupload)
+//cardatawithimgupload
+router.post('/carwithimgupload', auth, admin, carwithimgupload)
+router.delete('/deletecarimg/:vehicle_id',auth,admin,delVehicleImg)
 
-router.post('/carwithimgupload/:userId', auth,admin, upload.array("img", 10), carwithimgupload);
-
-router.delete('/:vehicle_id', auth, delVehicleImg)
-
-//new car
-
-router.post('/deletecar', auth,admin, deletecar)
-
-router.post('/newvehicle', auth,admin, insernewcar)
-
-router.put('/editvehicle', auth,admin, editcar)
-
+//car
+router.get('/adminshowallcars',auth,admin, showcdwi)
+router.delete('/deletewholecar/:vehicle_id',auth,admin,deletewholevehicle)
+router.put('/editvehicle/:vehicle_id',auth,admin,editcar)
 
 //vehicle category
-router.post('/newcategory', auth, admin,addNewC)
+router.get('/allcategory', auth,admin, viewallC)
+router.post('/newcategory', auth,admin, addNewC)
+router.put('/updatecategory/:category_id', auth,admin, updateC)
+router.delete('/deletecategory/:category_id', auth,admin, deleteC)
 
-router.put('/updatecategory', auth, updateC)
+//user control
+router.get('/alluser',auth,admin, allusers)
+router.put('/editoneuser/:user_id',auth,admin, editoneuser)
+router.delete('/deleteoneuser/:user_id',auth,admin, banuser)
 
-router.delete('/deletecategory', auth, deleteC)
+//admin side revervation
+//admin router that handles the admin edittting a reservation a car
 
-//deleteuser 
-router.delete('/:deleteuser', auth, banuser)
+const {viewAdminreservations,UAdminreservations,DAdminreservations} = require('../controllers/AdminReservationCont.js')
+
+router.get('/reservation',auth,admin, viewAdminreservations)
+
+router.put('/updatereservation/:reservation_id', auth,admin, UAdminreservations)
+
+router.delete('/deletereservation/:reservation_id', auth,admin, DAdminreservations)
+
+
+
+//admin side rentals
+const {viewRs,viewARs,NewRs, URs, Drs} = require('../controllers/RentalController.js')
+
+
+router.get('/allrentals', auth,admin, viewARs)
+
+router.get('/rentals/:user_id', auth,admin, viewRs)
+
+router.post('/newrental', auth,admin, NewRs)
+
+router.put('/updaterental/:user_id', auth,admin, URs)
+
+router.delete('/deleterental', auth,admin, Drs)
+
+//filter
+const {filterCars} = require('../controllers/FilterController.js')
+
+router.post('/filter',auth,admin, filterCars)
+
 
 module.exports = router

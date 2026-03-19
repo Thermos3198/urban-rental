@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const { findByEmail, createUser, isValidEmail,insertUserImg, showuserprofilepic,edituserdata,deleteuserdata} = require('../models/userModel.js')
+const { findByEmail, createUser, isValidEmail,insertUserImg, showuserprofilepic,edituserdata,deleteuserdata,getallcarswithimg} = require('../models/userModel.js')
 const config = require('../config/dotenvConfig')
 
 const cookieOpts = {
@@ -136,9 +136,8 @@ async function newuserprofilepic(req,res){
     try {
         const {user_id} = req.params
         console.log(user_id);
-        const img = `uploads/${user_id}/${req.file.filename}` 
-
-        const result = await insertUserImg(user_id,img)
+        const img = `userpics/${user_id}/${req.file.filename}` 
+        const [result] = await insertUserImg(user_id,img)
         console.log(result);
         res.status(201).json({message:"Sikeres feltöltés"})
 
@@ -153,7 +152,7 @@ async function edituser(req,res){
         const {user_id} = req.params
         const {username,email,password} = req.body
         console.log(username,email,password,user_id);
-        const result = await edituserdata(username,email,password,user_id)
+        const [result] = await edituserdata(username,email,password,user_id)
         console.log(result);
         res.status(201).json({message:"Sikeres modisitás"})
     } catch (err) {
@@ -167,7 +166,7 @@ async function deleteuser(req,res){
     try {
         const {user_id} = req.params
         console.log(user_id);
-        const result = await deleteuserdata(user_id)
+        const [result] = await deleteuserdata(user_id)
         console.log(result);
         res.status(200).json({message:"Sikeres törlés"})
     } catch (err) {
@@ -177,4 +176,86 @@ async function deleteuser(req,res){
 }
 
 
-module.exports = { register, login, whoAmI, logout, showuserprofile, newuserprofilepic,edituser,deleteuser } 
+
+async function viewcars(req,res){
+    try {
+        const [result] = await getallcarswithimg()
+        console.log(result);
+        res.status(200).json({result})
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ error: "Hiba a törléskor", err })
+    }
+}
+
+//userreservation
+const {reservation,newreservation,updatereservation,deletereservation}=require('../models/reserveModel.js')
+
+
+async function viewReservations(req,res){
+    try {
+        const {user_id} = req.params
+        console.log(user_id);
+        const [result] = await reservation(user_id)
+        console.log(result);
+        res.status(201).json({message:"Sikeres lekérés",result})
+
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ error: "Hiba a lekéréskor", err })
+    }
+}
+
+async function NewReservations(req,res){
+    try {
+        const {user_id,vehicle_id,pickup_date,return_date} = req.params
+        console.log(user_id,vehicle_id,pickup_date,return_date);
+        
+        if (!pickup_date || !return_date) {
+            return res.status(400).json({ error: "Pickup és return date kötelező" });
+        }
+        
+        const [result] = await newreservation(user_id,vehicle_id,pickup_date,return_date)
+        console.log(result);
+        res.status(201).json({message:"Sikeres feltöltés"})
+
+    } catch (err) {
+        console.log(err);
+        if (err.message === 'Ez a jármű lefoglalt az adott időszakra') {
+            return res.status(409).json({ error: err.message });
+        }
+        return res.status(500).json({ error: "Hiba a feltöltésen", err })
+    }
+}
+
+async function UReservations(req,res){
+    try {
+        const {vehicle_id,pickup_date,return_date,status} = req.params
+        console.log(vehicle_id,pickup_date,return_date,status);
+        const [result] = await updatereservation(vehicle_id,pickup_date,return_date,status)
+        console.log(result);
+        res.status(201).json({message:"Sikeres modisitás"})
+
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ error: "Hiba a modisitáskor", err })
+    }
+}
+
+async function DReservations(req,res){
+    try {
+        const {reservation_id} = req.params
+        console.log(reservation_id);
+        const [result] = await deletereservation(reservation_id)
+        console.log(result);
+        res.status(201).json({message:"Sikeres delete"})
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ error: "Hiba a törléskor", err })
+    }
+}
+
+
+
+
+module.exports = { register, login, whoAmI, logout, showuserprofile, newuserprofilepic,edituser,deleteuser,viewcars,viewReservations,NewReservations,UReservations,DReservations } 
