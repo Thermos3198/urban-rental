@@ -16,9 +16,9 @@ async function insernewvehicle(category_id, brand, model, color, transmission, l
     return result
 }
 
-async function editvehicle(brand, model, color, transmission, license_plate, year, price_per_day, vehicle_id) {
-    const sql = 'UPDATE `vehicles` SET `brand`=?,`model`=?,`color`=?,`transmission`=?,`license_plate`=?,`year`=? , `price_per_day`=? WHERE `vehicle_id`=?'
-    const [result] = await db.query(sql, [brand, model, color, transmission, license_plate, year, price_per_day, vehicle_id]);
+async function editvehicle(category_id,brand, model, color, transmission, license_plate, year, price_per_day, vehicle_id) {
+    const sql = 'UPDATE `vehicles` SET `category_id`=?, `brand`=?,`model`=?,`color`=?,`transmission`=?,`license_plate`=?,`year`=? , `price_per_day`=? WHERE `vehicle_id`=?'
+    const [result] = await db.query(sql, [category_id,brand, model, color, transmission, license_plate, year, price_per_day, vehicle_id]);
     console.log(result);
     return result
 }

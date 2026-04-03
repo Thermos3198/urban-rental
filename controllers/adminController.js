@@ -161,9 +161,9 @@ async function deletewholevehicle(req, res) {
 async function editcar(req, res) {
     try {
         const { vehicle_id } = req.params
-        const { brand, model, color, transmission, license_plate, year, price_per_day } = req.body
+        const {category_id, brand, model, color, transmission, license_plate, year, price_per_day } = req.body
         console.log(brand, model, color, transmission, license_plate, year, price_per_day, vehicle_id);
-        const [result] = await editvehicle(brand, model, color, transmission, license_plate, year, price_per_day, vehicle_id)
+        const [result] = await editvehicle(category_id,brand, model, color, transmission, license_plate, year, price_per_day, vehicle_id)
         console.log(result);
         if (result.affectedRows === 1) {
             res.status(200).json({ message: "Sikeres modisitás" })
