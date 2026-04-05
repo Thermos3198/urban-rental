@@ -179,9 +179,9 @@ async function deleteuser(req,res){
 
 async function viewcars(req,res){
     try {
-        const [result] = await getallcarswithimg()
+        const result = await getallcarswithimg()
         console.log(result);
-        res.status(200).json({result})
+        res.status(200).json([result])
     } catch (err) {
         console.log(err);
         return res.status(500).json({ error: "Hiba a törléskor", err })
