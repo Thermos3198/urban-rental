@@ -180,7 +180,7 @@ async function editcar(req, res) {
 
 async function showcdwi(req, res) {
     try {
-        const [result] = await getcardata()
+        const result = await getcardata()
         res.status(200).json({ result })
     } catch (err) {
         console.log(err);
