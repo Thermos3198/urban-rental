@@ -215,7 +215,7 @@ async function NewReservations(req, res) {
             return res.status(400).json({ error: "Minden adat kötelező (user_id, vehicle_id, pickup_date, return_date)" });
         }
         
-        const [result] = await newreservation(user_id, vehicle_id, pickup_date, return_date);
+        const result = await newreservation(user_id, vehicle_id, pickup_date, return_date);
         console.log(result);
         res.status(201).json({ message: "Sikeres lefoglalás", result });
 
@@ -224,6 +224,7 @@ async function NewReservations(req, res) {
         if (err.message === 'Ez a jármű lefoglalt az adott időszakra') {
             return res.status(409).json({ error: err.message });
         }
+        console.log(err);
         return res.status(500).json({ error: "Hiba a lefoglalásnál", err });
     }
 }
