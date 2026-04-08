@@ -136,7 +136,7 @@ async function newuserprofilepic(req,res){
     try {
         const {user_id} = req.params
         console.log(user_id);
-        const img = `userpics/${user_id}/${req.file.filename}` 
+        const img = `public/userpics/${user_id}/${req.file.filename}` 
         const [result] = await insertUserImg(user_id,img)
         console.log(result);
         res.status(201).json({message:"Sikeres feltöltés"})
@@ -209,13 +209,14 @@ async function viewReservations(req,res){
 async function NewReservations(req, res) {
     try {
         const { user_id, vehicle_id, pickup_date, return_date } = req.body;
+        console.log(req.body);
         console.log(user_id, vehicle_id, pickup_date, return_date);
         
         if (!user_id || !vehicle_id || !pickup_date || !return_date) {
             return res.status(400).json({ error: "Minden adat kötelező (user_id, vehicle_id, pickup_date, return_date)" });
         }
         
-        const [result] = await newreservation(user_id, vehicle_id, pickup_date, return_date);
+        const result = await newreservation(user_id, vehicle_id, pickup_date, return_date);
         console.log(result);
         res.status(201).json({ message: "Sikeres lefoglalás", result });
 

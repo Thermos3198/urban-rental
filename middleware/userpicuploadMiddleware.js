@@ -12,7 +12,7 @@ const storage = multer.diskStorage({
             return cb (new Error('Hiányzsik a user id'),null)
         }
 
-        const uploadDir = path.join(process.cwd(), "userpics",String(user_id))
+        const uploadDir = path.join(process.cwd(), "public", "userpics",String(user_id))
        
 
         try {
