@@ -38,7 +38,7 @@ router.post('/newreservation', auth, NewReservations)
 
 router.put('/updatereservation', auth, UReservations)
 
-router.delete('/deletereservation', auth, DReservations)
+router.delete('/deletereservation/:reservation_id', auth, DReservations)
 
 
 //filter

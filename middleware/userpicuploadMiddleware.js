@@ -1,46 +1,52 @@
-const multer = require('multer')
-const fs = require('fs')
-const path = require('path')
+const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
 
-const MAX_FILE_SIZE = 1024 * 1024 * 10
+const MAX_FILE_SIZE = 1024 * 1024 * 10;
 
 const storage = multer.diskStorage({
-    destination: (req,file,cb) =>{
-        const {user_id} = req.params
-        
-        if (!user_id) {
-            return cb (new Error('Hiányzsik a user id'),null)
-        }
+  destination: (req, file, cb) => {
+    const { user_id } = req.params;
 
-        const uploadDir = path.join(process.cwd(), "userpics",String(user_id))
-       
-
-        try {
-            fs.mkdirSync(uploadDir,{recursive: true})
-            cb(null,uploadDir)
-        } catch (err) {
-            return cb(new Error('Nem sikerült létrehozzni mappát'),null) 
-        }
-    },
-
-    filename: (req,file,cb)=>{
-        const now = new Date().toISOString().split('T')[0]
-        return cb(null,`${now}-${file.originalname}`)
+    if (!user_id) {
+      return cb(new Error("Hiányzsik a user id"), null);
     }
-})
+
+    const uploadDir = path.join(
+      process.cwd(),
+      "public",
+      "userpics",
+      String(user_id),
+    );
+
+    try {
+      fs.mkdirSync(uploadDir, { recursive: true });
+      cb(null, uploadDir);
+    } catch (err) {
+      return cb(new Error("Nem sikerült létrehozzni mappát"), null);
+    }
+  },
+
+  filename: (req, file, cb) => {
+    const now = new Date().toISOString().split("T")[0];
+    return cb(null, `${now}-${file.originalname}`);
+  },
+});
 
 const useruploadpic = multer({
-    storage: storage,
-    limits: {fileSize: MAX_FILE_SIZE},
-    fileFilter:(req,file,cb)=>{
-        const fileTypes = /jpg|jpeg|png|gif|svg|webp|avif|bmp|tiff/
-        const extName = fileTypes.test(path.extname(file.originalname).toLowerCase())
-        const mimeType = fileTypes.test(file.mimetype)
-        if (extName&&mimeType) {
-            return cb(null,true)
-        }
-        return cb(new Error('csak képeket lehet feltölteni'),null);
+  storage: storage,
+  limits: { fileSize: MAX_FILE_SIZE },
+  fileFilter: (req, file, cb) => {
+    const fileTypes = /jpg|jpeg|png|gif|svg|webp|avif|bmp|tiff/;
+    const extName = fileTypes.test(
+      path.extname(file.originalname).toLowerCase(),
+    );
+    const mimeType = fileTypes.test(file.mimetype);
+    if (extName && mimeType) {
+      return cb(null, true);
     }
-})
+    return cb(new Error("csak képeket lehet feltölteni"), null);
+  },
+});
 
-module.exports = {useruploadpic}
+module.exports = { useruploadpic };

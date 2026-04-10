@@ -1,7 +1,22 @@
 const db = require('../db/db')
 
 async function reservation(user_id) {
-    const sql= 'SELECT * FROM `reservations` WHERE `user_id`=?'
+    const sql= `SELECT 
+    r.vehicle_id,
+    r.pickup_date,
+    r.return_date,
+    r.status AS reservation_status,
+    r.created_at,
+    v.brand,
+    v.model,
+    v.color,
+    v.transmission,
+    v.license_plate,
+    vc.name AS category_name
+    FROM reservations r
+    LEFT JOIN vehicles v ON r.vehicle_id = v.vehicle_id
+    LEFT JOIN vehicle_category vc ON v.category_id = vc.category_id
+    WHERE r.user_id = ?;`
     const [result] = await db.query(sql, [user_id]);
     console.log(result);
     return result
