@@ -233,7 +233,7 @@ async function UReservations(req,res){
     try {
         const {vehicle_id,pickup_date,return_date,status} = req.params
         console.log(vehicle_id,pickup_date,return_date,status);
-        const [result] = await updatereservation(vehicle_id,pickup_date,return_date,status)
+        const result = await updatereservation(vehicle_id,pickup_date,return_date,status)
         console.log(result);
         res.status(201).json({message:"Sikeres modisitás"})
 
@@ -247,7 +247,7 @@ async function DReservations(req,res){
     try {
         const {reservation_id} = req.params
         console.log(reservation_id);
-        const [result] = await deletereservation(reservation_id)
+        const result = await deletereservation(reservation_id)
         console.log(result);
         res.status(201).json({message:"Sikeres delete"})
     } catch (err) {
