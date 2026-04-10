@@ -134,9 +134,9 @@ async function showuserprofile(req,res){
 
 async function newuserprofilepic(req,res){
     try {
-        const {user_id} = req.params
+        const {user_id} = req.user
         console.log(user_id);
-        const img = `userpics/${user_id}/${req.file.filename}` 
+        const img = `public/userpics/${user_id}/${req.file.filename}` 
         const [result] = await insertUserImg(user_id,img)
         console.log(result);
         res.status(201).json({message:"Sikeres feltöltés"})
@@ -149,7 +149,7 @@ async function newuserprofilepic(req,res){
 
 async function edituser(req,res){
     try {
-        const {user_id} = req.params
+        const {user_id} = req.user
         const {username,email,password} = req.body
         console.log(username,email,password,user_id);
         const [result] = await edituserdata(username,email,password,user_id)
@@ -164,7 +164,7 @@ async function edituser(req,res){
 
 async function deleteuser(req,res){
     try {
-        const {user_id} = req.params
+        const {user_id} = req.user
         console.log(user_id);
         const [result] = await deleteuserdata(user_id)
         console.log(result);
@@ -194,11 +194,11 @@ const {reservation,newreservation,updatereservation,deletereservation}=require('
 
 async function viewReservations(req,res){
     try {
-        const {user_id} = req.params
+        const {user_id} = req.user
         console.log(user_id);
         const [result] = await reservation(user_id)
         console.log(result);
-        res.status(201).json({message:"Sikeres lekérés",result})
+        res.status(200).json({message:"Sikeres lekérés",result})
 
     } catch (err) {
         console.log(err);
@@ -208,8 +208,10 @@ async function viewReservations(req,res){
 
 async function NewReservations(req, res) {
     try {
-        const { user_id, vehicle_id, pickup_date, return_date } = req.body;
+        const { user_id } = req.user;
+        const { vehicle_id, pickup_date, return_date } = req.body;
         console.log(user_id, vehicle_id, pickup_date, return_date);
+        console.log(req.body);
         
         if (!user_id || !vehicle_id || !pickup_date || !return_date) {
             return res.status(400).json({ error: "Minden adat kötelező (user_id, vehicle_id, pickup_date, return_date)" });
@@ -231,11 +233,14 @@ async function NewReservations(req, res) {
 
 async function UReservations(req,res){
     try {
-        const {vehicle_id,pickup_date,return_date,status} = req.params
-        console.log(vehicle_id,pickup_date,return_date,status);
-        const [result] = await updatereservation(vehicle_id,pickup_date,return_date,status)
+        const {vehicle_id,pickup_date,return_date,status,reservation_id} = req.body
+        console.log(vehicle_id,pickup_date,return_date,status,reservation_id);
+        if (!reservation_id || !vehicle_id) {
+            return res.status(400).json({ error: " reservation_id és vehicle_id kötelező" });
+        }
+        const [result] = await updatereservation(vehicle_id,pickup_date,return_date,status,reservation_id)
         console.log(result);
-        res.status(201).json({message:"Sikeres modisitás"})
+        res.status(200).json({message:"Sikeres modisitás"})
 
     } catch (err) {
         console.log(err);
@@ -247,9 +252,12 @@ async function DReservations(req,res){
     try {
         const {reservation_id} = req.params
         console.log(reservation_id);
+        if (!reservation_id) {
+            return res.status(400).json({ error: " reservation_id kötelező" });
+        }
         const [result] = await deletereservation(reservation_id)
         console.log(result);
-        res.status(201).json({message:"Sikeres delete"})
+        res.status(200).json({message:"Sikeres törlés"})
     } catch (err) {
         console.log(err);
         return res.status(500).json({ error: "Hiba a törléskor", err })
