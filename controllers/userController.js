@@ -196,7 +196,7 @@ async function viewReservations(req,res){
     try {
         const {user_id} = req.user
         console.log(user_id);
-        const [result] = await reservation(user_id)
+        const result = await reservation(user_id)
         console.log(result);
         res.status(200).json({message:"Sikeres lekérés",result})
 
