@@ -1,5 +1,5 @@
 const express = require('express')
-const {register,login, whoAmI, logout, showuserprofile, newuserprofilepic,edituser,deleteuser,viewcars} = require('../controllers/userController.js')
+const {register,login, whoAmI, logout, showuserprofile, newuserprofilepic, edituser, deleteuser, deleteuserprofilepic, viewcars} = require('../controllers/userController.js')
 const {auth}=require('../middleware/userMiddleware')
 const {useruploadpic}=require('../middleware/userpicuploadMiddleware.js')
 const {viewReservations,NewReservations,UReservations,DReservations} = require('../controllers/userController.js')
@@ -23,6 +23,8 @@ router.post('/newuserprofile/:user_id', auth, useruploadpic.single("img"), newus
 
 
 router.put('/edituserprofile/:user_id', auth, edituser)
+
+router.delete('/deleteuserpic/:user_id', auth, deleteuserprofilepic)
 
 router.delete('/deleteuser/:user_id',auth,deleteuser)
 

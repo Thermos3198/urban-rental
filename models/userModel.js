@@ -33,6 +33,13 @@ async function showuserprofilepic(user_id){
     return [result]
 }
 
+async function deleteUserImg(user_id){
+    const sql='DELETE FROM `users_img` WHERE `user_id`=?'
+    const [result] = await db.query(sql,[user_id])
+    console.log(result);
+    return [result]
+}
+
 async function edituserdata(username,email,password,user_id){
     const sql='UPDATE `users` SET `username`=?,`email`=?,`password`=? WHERE `user_id`=?'
     const [result] = await db.query(sql,[username,email,password,user_id])
@@ -77,4 +84,4 @@ async function getallcarswithimg() {
 }
 
 
-module.exports = {findByEmail, createUser, isValidEmail, insertUserImg,showuserprofilepic,edituserdata,deleteuserdata,viewalluser,adminedituser,Banusermod,getallcarswithimg}
+module.exports = {findByEmail, createUser, isValidEmail, insertUserImg,showuserprofilepic,edituserdata,deleteuserdata,viewalluser,adminedituser,Banusermod,getallcarswithimg,deleteUserImg}
