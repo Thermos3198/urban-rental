@@ -2,6 +2,8 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const { findByEmail, createUser, isValidEmail,insertUserImg, showuserprofilepic,edituserdata,deleteuserdata,getallcarswithimg} = require('../models/userModel.js')
 const config = require('../config/dotenvConfig')
+const db = require('../db/db.js')
+
 
 const cookieOpts = {
     httpOnly: true,
@@ -147,17 +149,32 @@ async function newuserprofilepic(req,res){
     }
 }
 
-async function edituser(req,res){
+async function edituser(req, res) {
     try {
-        const {user_id} = req.params
-        const {username,email,password} = req.body
-        console.log(username,email,password,user_id);
-        const [result] = await edituserdata(username,email,password,user_id)
-        console.log(result);
-        res.status(201).json({message:"Sikeres modisitás"})
+        const { user_id } = req.params;
+        const { username, email, password } = req.body;
+
+        const [rows] = await db.query('SELECT * FROM users WHERE user_id = ?', [user_id]);
+        const currentUser = rows[0];
+
+        const finalUsername = username && username.trim() !== "" ? username : currentUser.username;
+        const finalEmail = email && email.trim() !== "" ? email : currentUser.email;
+        
+        let finalPassword = currentUser.password;
+
+        if (password && password.trim() !== "") {
+            const salt = await bcrypt.genSalt(10);
+            finalPassword = await bcrypt.hash(password, salt);
+        }
+        await db.query(
+            'UPDATE users SET username = ?, email = ?, password = ? WHERE user_id = ?',
+            [finalUsername, finalEmail, finalPassword, user_id]
+        );
+
+        res.status(200).json({ message: "Sikeres módosítás!" });
     } catch (err) {
-        console.log(err);
-        return res.status(500).json({ error: "Hiba az editnél", err })
+        console.error(err);
+        res.status(500).json({ error: "Hiba az editnél" });
     }
 }
 
@@ -194,9 +211,9 @@ const {reservation,newreservation,updatereservation,deletereservation}=require('
 
 async function viewReservations(req,res){
     try {
-        const {user_id} = req.params
+        const user_id = req.user.user_id
         console.log(user_id);
-        const [result] = await reservation(user_id)
+        const result = await reservation(user_id)
         console.log(result);
         res.status(201).json({message:"Sikeres lekérés",result})
 
@@ -243,16 +260,21 @@ async function UReservations(req,res){
     }
 }
 
-async function DReservations(req,res){
+async function DReservations(req, res) {
     try {
-        const {reservation_id} = req.params
-        console.log(reservation_id);
-        const result = await deletereservation(reservation_id)
-        console.log(result);
-        res.status(201).json({message:"Sikeres delete"})
+        const { reservation_id } = req.params;
+        
+        // Próbáld meg ezeket sorban, amíg az egyik nem lesz jó:
+        const user_id = req.user?.user_id || req.user?.id || req.body.user_id;
+
+        console.log("DEBUG - reservation_id:", reservation_id);
+        console.log("DEBUG - user_id:", user_id); // Ennek NEM szabad undefined-nak lennie!
+
+        const result = await deletereservation(reservation_id, user_id);
+        
+        res.status(200).json({ message: "Sikeres törlés", affectedRows: result.affectedRows });
     } catch (err) {
-        console.log(err);
-        return res.status(500).json({ error: "Hiba a törléskor", err })
+        res.status(500).json({ error: "Hiba", details: err.message });
     }
 }
 

@@ -18,11 +18,11 @@ router.post('/logout', auth, logout)
 
 router.get('/userprofile', auth, showuserprofile)
 
+//this shall be removed, dead end :(
+//router.post('/newuserprofile/:user_id', auth, useruploadpic.single("img"), newuserprofilepic)
 
-router.post('/newuserprofile/:user_id', auth, useruploadpic.single("img"), newuserprofilepic)
 
-
-router.put('/edituserprofile/:user_id', auth, edituser)
+router.put('/edituser/:user_id', auth, edituser);
 
 router.delete('/deleteuser/:user_id',auth,deleteuser)
 
@@ -38,7 +38,7 @@ router.post('/newreservation', auth, NewReservations)
 
 router.put('/updatereservation', auth, UReservations)
 
-router.delete('/deletereservation', auth, DReservations)
+router.delete('/deletereservation/:reservation_id', auth, DReservations)
 
 
 //filter
