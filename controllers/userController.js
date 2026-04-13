@@ -264,7 +264,7 @@ async function UReservations(req,res){
         if (!reservation_id || !vehicle_id) {
             return res.status(400).json({ error: " reservation_id és vehicle_id kötelező" });
         }
-        const [result] = await updatereservation(vehicle_id,pickup_date,return_date,status,reservation_id)
+        const result = await updatereservation(vehicle_id,pickup_date,return_date,status,reservation_id)
         console.log(result);
         res.status(200).json({message:"Sikeres modisitás"})
 
@@ -281,7 +281,7 @@ async function DReservations(req,res){
         if (!reservation_id) {
             return res.status(400).json({ error: " reservation_id kötelező" });
         }
-        const [result] = await deletereservation(reservation_id)
+        const result = await deletereservation(reservation_id)
         console.log(result);
         res.status(200).json({message:"Sikeres törlés"})
     } catch (err) {

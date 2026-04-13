@@ -69,12 +69,6 @@ async function adminedituser(username,email,password,role,user_id){
 }
 
 
-async function Banusermod(user_id) {
-    const sql='DELETE FROM `users` WHERE `user_id`=?'
-    const [result]=await db.query(sql,[user_id])
-    console.log(result);
-    return result
-}
 
 async function getallcarswithimg() {
     const sql='SELECT * FROM `vehicles` JOIN vehicles_img USING (vehicle_id)'
