@@ -43,7 +43,12 @@ async function filterVehicles(filters) {
 
     const [result] = await db.query(sql, params)
     console.log(result)
-    return result
+    
+    // Ensure we return an array
+    if (Array.isArray(result)) {
+        return result
+    }
+    return [result]
 }
 
 module.exports = {filterVehicles}
