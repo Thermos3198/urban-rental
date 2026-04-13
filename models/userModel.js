@@ -78,4 +78,4 @@ async function getallcarswithimg() {
 }
 
 
-module.exports = {findByEmail, createUser, isValidEmail, insertUserImg,showuserprofilepic,edituserdata,deleteuserdata,viewalluser,adminedituser,Banusermod,getallcarswithimg,deleteUserImg}
+module.exports = {findByEmail, createUser, isValidEmail, insertUserImg,showuserprofilepic,edituserdata,deleteuserdata,viewalluser,adminedituser,getallcarswithimg,deleteUserImg}
