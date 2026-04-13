@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const { findByEmail, createUser, isValidEmail,insertUserImg, showuserprofilepic,edituserdata,deleteuserdata,getallcarswithimg} = require('../models/userModel.js')
+const { findByEmail, createUser, isValidEmail,insertUserImg, showuserprofilepic, deleteUserImg, edituserdata,deleteuserdata,getallcarswithimg} = require('../models/userModel.js')
 const config = require('../config/dotenvConfig')
 
 const cookieOpts = {
@@ -161,6 +161,32 @@ async function edituser(req,res){
     }
 }
 
+async function deleteuserprofilepic(req,res){
+    try {
+        const {user_id} = req.user
+        console.log(user_id);
+        const [result] = await deleteUserImg(user_id)
+        console.log(result);
+        
+        // Also delete the actual image file from disk
+        const fs = require('fs');
+        const path = require('path');
+        const userpicDir = path.join(process.cwd(), 'public', 'userpics', String(user_id));
+        try {
+            if (fs.existsSync(userpicDir)) {
+                fs.rmSync(userpicDir, { recursive: true, force: true });
+            }
+        } catch (err) {
+            console.log('Error deleting image directory:', err);
+        }
+        
+        res.status(200).json({message:"Profile picture deleted"})
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ error: "Hiba a törléskor", err })
+    }
+}
+
 
 async function deleteuser(req,res){
     try {
@@ -238,7 +264,7 @@ async function UReservations(req,res){
         if (!reservation_id || !vehicle_id) {
             return res.status(400).json({ error: " reservation_id és vehicle_id kötelező" });
         }
-        const [result] = await updatereservation(vehicle_id,pickup_date,return_date,status,reservation_id)
+        const result = await updatereservation(vehicle_id,pickup_date,return_date,status,reservation_id)
         console.log(result);
         res.status(200).json({message:"Sikeres modisitás"})
 
@@ -255,7 +281,7 @@ async function DReservations(req,res){
         if (!reservation_id) {
             return res.status(400).json({ error: " reservation_id kötelező" });
         }
-        const [result] = await deletereservation(reservation_id)
+        const result = await deletereservation(reservation_id)
         console.log(result);
         res.status(200).json({message:"Sikeres törlés"})
     } catch (err) {
@@ -267,4 +293,4 @@ async function DReservations(req,res){
 
 
 
-module.exports = { register, login, whoAmI, logout, showuserprofile, newuserprofilepic,edituser,deleteuser,viewcars,viewReservations,NewReservations,UReservations,DReservations } 
+module.exports = { register, login, whoAmI, logout, showuserprofile, newuserprofilepic, edituser, deleteuser, deleteuserprofilepic, viewcars, viewReservations, NewReservations, UReservations, DReservations }
