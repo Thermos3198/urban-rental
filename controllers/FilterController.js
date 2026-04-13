@@ -4,8 +4,7 @@ async function filterCars(req,res){
     try {
         const filters = req.body
         const result = await filterVehicles(filters)
-        
-        // Ensure result is an array (in case query returns single object)
+        console.log(result);
         let vehiclesArray = Array.isArray(result) ? result : [result]
         
         console.log("Vehicles from model:", vehiclesArray);
