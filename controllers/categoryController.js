@@ -5,7 +5,7 @@ const config=require('../config/dotenvConfig')
 
 async function viewallC(req,res){
     try {
-        const [result] = await viewallcategory()
+        const result = await viewallcategory()
         console.log(result);
         res.status(201).json({message:"Sikeres lekérés",result})
     } catch (err) {
@@ -18,7 +18,7 @@ async function addNewC(req,res){
     try {
         const {name} = req.body
         console.log(name);
-        const [result] = await addNewcategory(name)
+        const result = await addNewcategory(name)
         console.log(result);
         res.status(201).json({message:"Sikeres feltöltés"})
 
@@ -33,7 +33,7 @@ async function updateC(req,res){
         const {category_id} = req.params
         const {name} = req.body
         console.log(name,category_id);
-        const [result] = await updateCategory(name,category_id)
+        const result = await updateCategory(name,category_id)
         console.log(result);
         if(result.affectedRows===0){
             return res.status(404).json({message:"Nem található"})
@@ -52,7 +52,7 @@ async function deleteC(req,res){
     try {
         const {category_id} = req.params
         console.log(category_id);
-        const [result] = await deleteCategory(category_id)
+        const result = await deleteCategory(category_id)
         console.log(result);
         if(result.affectedRows===0){
             return res.status(404).json({message:"Nem található"})
