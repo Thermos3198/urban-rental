@@ -1,22 +1,7 @@
 const db = require('../db/db')
 
 async function reservation(user_id) {
-    const sql= `SELECT 
-    r.vehicle_id,
-    r.pickup_date,
-    r.return_date,
-    r.status AS reservation_status,
-    r.created_at,
-    v.brand,
-    v.model,
-    v.color,
-    v.transmission,
-    v.license_plate,
-    vc.name AS category_name
-    FROM reservations r
-    LEFT JOIN vehicles v ON r.vehicle_id = v.vehicle_id
-    LEFT JOIN vehicle_category vc ON v.category_id = vc.category_id
-    WHERE r.user_id = ?;`
+    const sql= `SELECT * FROM reservations JOIN vehicles ON reservations.vehicle_id = vehicles.vehicle_id WHERE user_id=?`
     const [result] = await db.query(sql, [user_id]);
     console.log(result);
     return result
@@ -28,12 +13,12 @@ async function checkAvailability(vehicle_id, pickup_date, return_date) {
                  AND status IN ('lefoglalva', 'active_rental')
                  AND ((pickup_date < ? AND return_date > ?) OR(pickup_date >= ? AND return_date <= ?))`
     const [conflicts] = await db.query(sql, [
-        vehicle_id, 
+        vehicle_id,
         pickup_date, return_date,
         pickup_date, return_date,
         pickup_date, return_date
     ]);
-    
+
     console.log('Availability check conflicts:', conflicts.length);
     return conflicts;
 }
@@ -42,6 +27,7 @@ async function newreservation(user_id,vehicle_id,pickup_date,return_date) {
     try {
         const conflicts = await checkAvailability(vehicle_id, pickup_date, return_date);
         
+         
         if (conflicts && conflicts.length > 0) {
             console.log('Vehicle already booked for selected dates');
             throw new Error('Ez a jármű lefoglalt az adott időszakra');
@@ -64,10 +50,12 @@ async function updatereservation(vehicle_id,pickup_date,return_date,status, rese
     return result
 }
 
-async function deletereservation(reservation_id) {
-    const sql='DELETE FROM `reservations` WHERE `reservation_id`=?'
-    const [result]=await db.query(sql,[reservation_id])
+
+async function deletereservation(reservation_id,user_id) {
+    const sql='DELETE FROM `reservations` WHERE `reservation_id` = ? AND `user_id` = ?'
+    const [result]= await db.query(sql,[reservation_id,user_id])
     console.log(result);
     return result
 }
+
 module.exports = {newreservation, updatereservation, deletereservation,reservation, checkAvailability}
