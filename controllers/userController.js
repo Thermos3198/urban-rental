@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const { findByEmail, createUser, isValidEmail,insertUserImg, showuserprofilepic, deleteUserImg, edituserdata,deleteuserdata,getallcarswithimg} = require('../models/userModel.js')
+const { findByEmail, createUser, isValidEmail,insertUserImg, showuserprofilepic, deleteUserImg, edituserdata,deleteuserdata,getallcarswithimg, currentUser} = require('../models/userModel.js')
 const config = require('../config/dotenvConfig')
 
 const cookieOpts = {
@@ -152,9 +152,19 @@ async function edituser(req,res){
         const {user_id} = req.user
         const {username,email,password} = req.body
         console.log(username,email,password,user_id);
-        const [result] = await edituserdata(username,email,password,user_id)
+        const selecteduser=await currentUserfromid(user_id)
+        const currentUser =selecteduser[0]
+        const finalUsername = username && username.trim() !== "" ? username : currentUser.username;
+        const finalEmail = email && email.trim() !== "" ? email : currentUser.email;
+        let finalPassword = currentUser.password;
+        if (password && password.trim() !== "") {
+            const salt = await bcrypt.genSalt(10);
+            finalPassword = await bcrypt.hash(password, salt);
+        }
+        console.log(finalUsername,finalEmail,finalPassword)
+        const [result] = await edituserdata(finalUsername,finalEmail,finalPassword,user_id)
         console.log(result);
-        res.status(201).json({message:"Sikeres modisitás"})
+        res.status(200).json({message:"Sikeres modisitás"})
     } catch (err) {
         console.log(err);
         return res.status(500).json({ error: "Hiba az editnél", err })
@@ -277,11 +287,12 @@ async function UReservations(req,res){
 async function DReservations(req,res){
     try {
         const {reservation_id} = req.params
-        console.log(reservation_id);
+        const {user_id}=req.user
+        console.log(reservation_id,user_id);
         if (!reservation_id) {
             return res.status(400).json({ error: " reservation_id kötelező" });
         }
-        const result = await deletereservation(reservation_id)
+        const result = await deletereservation(reservation_id,user_id)
         console.log(result);
         res.status(200).json({message:"Sikeres törlés"})
     } catch (err) {

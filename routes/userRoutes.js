@@ -21,8 +21,8 @@ router.get('/userprofile', auth, showuserprofile)
 
 router.post('/newuserprofile/:user_id', auth, useruploadpic.single("img"), newuserprofilepic)
 
-
-router.put('/edituserprofile/:user_id', auth, edituser)
+//router.put('/edituserprofile/:user_id', auth, edituser)
+router.put('/edituser/:user_id', auth, edituser)
 
 router.delete('/deleteuserpic/:user_id', auth, deleteuserprofilepic)
 
