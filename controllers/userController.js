@@ -64,7 +64,7 @@ async function login(req, res) {
         }
         console.log(exists);
         console.log("psw:", psw);
-        console.log("exists.password:", exists.user_id);
+        console.log("exists.password:", exists.password);
         const ok = await bcrypt.compare(psw, exists.password);
         console.log(ok);
         if (!ok) {
