@@ -19,6 +19,8 @@ function isValidEmail(email) {
     return emailRegex.test(email);
 }
 
+
+//no
 async function insertUserImg(user_id,img){
     const sql = 'INSERT INTO `users_img`(`user_id`, `user_img`) VALUES (?,?)'
     const [result] = await db.query(sql,[user_id,img])
@@ -26,6 +28,7 @@ async function insertUserImg(user_id,img){
     return [result]
 }
 
+//still no
 async function showuserprofilepic(user_id){
     const sql='SELECT `user_img` FROM `users_img` WHERE `user_id`=?'
     const [result] = await db.query(sql,[user_id])

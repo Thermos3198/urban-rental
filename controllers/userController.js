@@ -134,6 +134,7 @@ async function showuserprofile(req,res){
     }
 }
 
+//never needed ts in the first place
 async function newuserprofilepic(req,res){
     try {
         const {user_id} = req.params
@@ -151,12 +152,11 @@ async function newuserprofilepic(req,res){
 
 async function edituser(req, res) {
     try {
-        const { user_id } = req.params;
-        const { username, email, password } = req.body;
-
-        const [rows] = await db.query('SELECT * FROM users WHERE user_id = ?', [user_id]);
-        const currentUser = rows[0];
-
+        const {user_id} = req.user
+        const {username,email,password} = req.body
+        console.log(username,email,password,user_id);
+        const selecteduser=await currentUserfromid(user_id)
+        const currentUser =selecteduser[0]
         const finalUsername = username && username.trim() !== "" ? username : currentUser.username;
         const finalEmail = email && email.trim() !== "" ? email : currentUser.email;
         
