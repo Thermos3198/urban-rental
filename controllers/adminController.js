@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const { findByEmail, isValidEmail } = require('../models/adminModel.js')
 const { insertVehicleImg, allVehicleImg, delCarImg } = require('../models/carImgModel.js')
@@ -12,8 +12,8 @@ const path = require('path');
 
 const cookieOpts = {
     httpOnly: true,
-    secure: false,
-    sameSite: 'lax',
+    secure: true,
+    sameSite: 'none',
     path: '/',
     maxAge: 1000 * 60 * 60 * 24 * 7
 }
@@ -77,7 +77,14 @@ async function whoAmI(req, res) {
 
 async function logout(req, res) {
     try {
-        return res.clearCookie(config.ADMINCOOKIE_NAME, { path: '/' }).status(200).json({ message: 'Sikeres kijelentkezes' })
+        res.clearCookie(config.COOKIE_NAME, 
+            {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'none',
+                path: '/',
+            });
+            res.status(200).json({ message: 'Sikeres kijelentkezes' })
 
     } catch (err) {
         return res.status(500).json({ error: 'logout server hiba' })

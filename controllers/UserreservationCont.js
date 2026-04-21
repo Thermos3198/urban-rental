@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 const jwt=require('jsonwebtoken')
 const {reservation,newreservation,updatereservation,deletereservation}=require('../models/reserveModel.js')
 const config=require('../config/dotenvConfig')

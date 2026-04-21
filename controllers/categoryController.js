@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 const jwt=require('jsonwebtoken')
 const {viewallcategory,addNewcategory,updateCategory,deleteCategory}=require('../models/categoryModel.js')
 const config=require('../config/dotenvConfig')
