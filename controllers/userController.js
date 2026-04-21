@@ -24,7 +24,7 @@ async function register(req, res) {
         }
 
 
-        if(psw.contains<8){
+if(psw.length < 8){
             return res.status(400).json({error:"A jelszó rövidebb mint 8 character"})
         }
         

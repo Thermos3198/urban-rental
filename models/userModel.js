@@ -77,7 +77,7 @@ async function getallcarswithimg() {
     return result
 }
 
-async function currentUserfromid() {
+async function currentUserfromid(user_id) {
     const sql='SELECT * FROM users WHERE user_id = ?'
     const [result]=await db.query(sql,[user_id])
     console.log(result);
@@ -85,4 +85,11 @@ async function currentUserfromid() {
 }
 
 
-module.exports = {findByEmail, createUser, isValidEmail, insertUserImg,showuserprofilepic,edituserdata,deleteuserdata,viewalluser,adminedituser,getallcarswithimg,deleteUserImg,currentUserfromid}
+async function currentUser(user_id) {
+    const sql='SELECT * FROM users WHERE user_id = ?'
+    const [result]=await db.query(sql,[user_id])
+    console.log(result);
+    return result
+}
+
+module.exports = {findByEmail, createUser, isValidEmail, insertUserImg,showuserprofilepic,edituserdata,deleteuserdata,viewalluser,adminedituser,getallcarswithimg,deleteUserImg,currentUserfromid,currentUser}
