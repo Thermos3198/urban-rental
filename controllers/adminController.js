@@ -4,7 +4,7 @@ const { findByEmail, isValidEmail } = require('../models/adminModel.js')
 const { insertVehicleImg, allVehicleImg, delCarImg } = require('../models/carImgModel.js')
 const config = require('../config/dotenvConfig')
 const { insernewvehicle, deletevehicle, editvehicle, getcardata } = require('../models/cardataModel')
-const { viewalluser, adminedituser, Banusermod } = require('../models/userModel.js')
+const { viewalluser, adminedituser, deleteuserdata } = require('../models/userModel.js')
 const { upload } = require('../middleware/uploadMiddleware.js')
 const multer = require('multer');
 const fs = require('fs').promises;
@@ -225,7 +225,7 @@ async function editoneuser(req, res) {
 async function banuser(req, res) {
     try {
         const { user_id } = req.params
-        const [result] = await Banusermod(user_id)
+        const [result] = await deleteuserdata(user_id)
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: "Nem létezik ilyen" })
         }

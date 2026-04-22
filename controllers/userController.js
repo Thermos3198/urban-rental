@@ -85,7 +85,7 @@ async function login(req, res) {
         return res.status(200).json({ message: 'Sikeres login' })
 
     } catch (err) {
-        console.error("Login error stack:", err.stack || err);
+        console.log(err);
         return res.status(500).json({ error: 'belepesi hiba', details: err.message || err });
     }
 }
