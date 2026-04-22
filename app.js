@@ -5,7 +5,7 @@ const app = express();
 const path = require('path');
 
 app.use(cors({
-    origin: ['http://localhost:5173','https://urbanrentalbaross.netlify.app/'],
+    origin: ['http://localhost:5173','https://urbanrentalbaross.netlify.app'],
     credentials: true
 }));
 app.use(express.json())
