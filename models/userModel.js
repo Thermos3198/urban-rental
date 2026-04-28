@@ -61,9 +61,9 @@ async function viewalluser(){
     return [result]
 }
 
-async function adminedituser(username,email,password,role,user_id){
-    const sql='UPDATE `users` SET `username`=?,`email`=?,`password`=?,`role`=? WHERE `user_id`=?'
-    const [result] = await db.query(sql,[username,email,password,role,user_id])
+async function adminedituser(username,email,role,user_id){
+    const sql='UPDATE `users` SET `username`=?,`email`=?,`role`=? WHERE `user_id`=?'
+    const [result] = await db.query(sql,[username,email,role,user_id])
     console.log(result);
     return [result]
 }
