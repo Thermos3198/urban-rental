@@ -207,14 +207,17 @@ async function allusers(req, res) {
 async function editoneuser(req, res) {
     try {
         const { user_id } = req.params
-        const { username, email, password, role } = req.body
-        const [result] = await adminedituser(username, email, password, role, user_id)
+        const { username, email, role } = req.body
+        if (!username || !email || !role) {
+            return res.status(400).json({ error: "Minden mező kitöltése kötelező" })
+        }
+        const [result] = await adminedituser(username, email, role, user_id)
         console.log(result);
         if (result.affectedRows === 1) {
             res.status(200).json({ message: "Sikeres modisitás" })
         }
         else {
-            console.log('miért');
+            console.log('error');
             res.status(404).json({ message: "Nem található" })
         }
     } catch (err) {
