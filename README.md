@@ -1,7 +1,8 @@
 # UrbanRental Backend
 ---
 ## Készítette:
-UrbanRental Fejlesztő Csapat
+- Kovács Péter
+- Drágán Daniel
 
 ---
 
@@ -137,179 +138,30 @@ UrbanRental Fejlesztő Csapat
     4. config/dotenvConfig: Környezeti változók betöltése
 
 I. register – Regisztráció:
-- Funkció:
-  - Új felhasználó regisztrálása az adatbázisban
-  - Email formátum validálása
-  - Jelszó legalább 8 karakter hosszúságú legyen
-  - Az email cím egyediségének ellenőrzése (nem lehet már létező felhasználó)
-- Bemenet:
-  - username, email, psw a kérés törzsében
-- Validálás:
-  - Minden mező kitöltött-e
-  - Email formátum érvényes-e
-  - Jelszó hossza legalább 8 karakter
-  - Email egyedi-e
-- Válasz:
-  - Sikeres regisztráció: 201-es válasz státusz (insertId)
-  - Hiányzó adatok: 400-as válasz státusz
-  - Email már létezik: 409-es válasz státusz
 
 II. login – Bejelentkezés:
-- Funkció:
-  - Felhasználói bejelentkezés email és jelszó alapján
-  - Jelszó összehasonlítás bcrypt.compare segítségével
-  - JWT token generálás a sikeres azonosítás után
-  - Token elhelyezése cookie-ban (config.COOKIE_NAME)
-- Bemenet:
-  - email, psw a kérés törzsében
-- Validálás:
-  - Email és jelszó mezők kitöltött-e
-  - Felhasználó létezik-e
-  - Jelszó helyes-e
-- Válasz:
-  - Sikeres bejelentkezés: 200-as válasz státusz, cookie-ban token
-  - Hiányzó adatok: 400-as válasz státusz
-  - Hibás email vagy jelszó: 401-es válasz státusz
 
 III. whoAmI – Aktuális felhasználó adatai:
-- Funkció:
-  - Visszaadja az aktuálisan bejelentkezett felhasználó adatait (JWT tokenből)
-  - req.user objektumban van elérhető a JWT dekódolt tartalma
-- Bemenet:
-  - Sütiből betöltött cookie token
-- Validálás:
-  - Bejelentkezett felhasználó létezik-e (req.user)
-- Válasz:
-  - Sikeres lekérés: 200-as válasz státusz (user_id, username, email, role, created_at)
-  - Nincs bejelentkezve: 401-es válasz státusz
 
 IV. logout – Kijelentkezés:
-- Funkció:
-  - Törli a JWT tokent a cookie-ból (res.clearCookie)
-  - Ezzel kijelentkezteti a felhasználót
-- Válasz:
-  - Sikeres kijelentkezés: 200-as válasz státusz
-  - Szerver hiba esetén: 500-as válasz státusz
-
-V. showuserprofile – Profil adatok lekérdezése:
-- Funkció:
-  - Lekéri a felhasználó adatait és profilképét (ha van)
-- Bemenet:
-  - Sütiből betöltött cookie token
-- Válasz:
-  - Sikeres lekérés: 200-as válasz státusz (user adatok + img objektum)
-  - Nincs bejelentkezve: 401-es válasz státusz
 
 VI. newuserprofilepic – Profilkép feltöltése:
-- Funkció:
-  - Felhasználó profilképének feltöltése
-  - Képfájl nevének formázása: user_id mappába, dátum előtaggal
-- Bemenet:
-  - Sütiből betöltött cookie token (user_id)
-  - req.file (feltöltött kép)
-- Válasz:
-  - Sikeres feltöltés: 201-es válasz státusz
-  - Feltöltési hiba esetén: 500-as válasz státusz
-
-VII. edituser – Felhasználói adatok módosítása:
-- Funkció:
-  - Felhasználó nevének, emailének és jelszavának módosítása
-  - Ha az új érték üres, megtartja a régi értéket
-  - Jelszó esetén újra titkosítja bcrypt.hash segítségével
-- Bemenet:
-  - Sütiből betöltött cookie token (user_id)
-  - username, email, password a kérés törzsében (opcionális mezők)
-- Válasz:
-  - Sikeres módosítás: 200-as válasz státusz
-  - Módosítási hiba esetén: 500-as válasz státusz
 
 VIII. deleteuserprofilepic – Profilkép törlése:
-- Funkció:
-  - Törli a profilképet az adatbázisból és fájlrendszerről is
-  - Törlés után törli a teljes mappát is (recursive delete)
-- Bemenet:
-  - Sütiből betöltött cookie token (user_id)
-- Válasz:
-  - Sikeres törlés: 200-as válasz státusz
-  - Törlési hiba esetén: 500-as válasz státusz
 
 IX. deleteuser – Felhasználó törlése:
-- Funkció:
-  - Teljes felhasználói adatbázisbejegyzés törlése
-- Bemenet:
-  - Sütiből betöltött cookie token (user_id)
-- Válasz:
-  - Sikeres törlés: 200-as válasz státusz
-  - Törlési hiba esetén: 500-as válasz státusz
 
 X. viewcars – Összes jármű lekérdezése (megtalálható képpel):
-- Funkció:
-  - Lekéri az összes járművet a vehicles táblából
-  - JOIN segítségével hozzáadja a képeket is (vehicles_img tábla)
-- Válasz:
-  - Sikeres lekérés: 200-as válasz státusz (tömb formájában)
-  - Lekérési hiba esetén: 500-as válasz státusz
 
 XI. viewReservations – Saját foglalások lekérdezése:
-- Funkció:
-  - Lekéri a bejelentkezett felhasználó összes foglalását
-  - JOIN segítségével hozzáadja a jármű adatait is (vehicles tábla)
-- Bemenet:
-  - Sütiből betöltött cookie token (user_id)
-- Válasz:
-  - Sikeres lekérés: 200-as válasz státusz
-  - Lekérési hiba esetén: 500-as válasz státusz
 
 XII. NewReservations – Új foglalás létrehozása:
-- Funkció:
-  - Új járműfoglalás létrehozása
-  - Időpont konfliktusok ellenőrzése (checkAvailability)
-  - Ha a jármű már foglalt az adott időszakra, hibát küld
-- Bemenet:
-  - Sütiből betöltött cookie token (user_id)
-  - vehicle_id, pickup_date, return_date a kérés törzsében
-- Validálás:
-  - Minden mező kitöltött-e
-  - Időpont konfliktus van-e (checkAvailability függvény)
-- Válasz:
-  - Sikeres foglalás: 201-es válasz státusz
-  - Konfliktus (jármű már foglalt): 409-es válasz státusz
-  - Hiba esetén: 500-as válasz státusz
 
 XIII. UReservations – Foglalás módosítása:
-- Funkció:
-  - Meglévő foglalás adatainak módosítása (vehicle_id, pickup_date, return_date, status)
-- Bemenet:
-  - vehicle_id, pickup_date, return_date, status, reservation_id a kérés törzsében
-- Validálás:
-  - reservation_id és vehicle_id kitöltött-e
-- Válasz:
-  - Sikeres módosítás: 200-as válasz státusz
-  - Hiba esetén: 500-as válasz státusz
 
 XIV. DReservations – Foglalás törlése:
-- Funkció:
-  - Saját foglalás törlése (csak saját felhasználó törölheti)
-- Bemenet:
-  - reservation_id az útvonal paraméterből
-  - user_id a JWT tokenből
-- Validálás:
-  - reservation_id kitöltött-e
-- Válasz:
-  - Sikeres törlés: 200-as válasz státusz
-  - Hiba esetén: 500-as válasz státusz
 
 XV. filterCars – Jármű szűrés kritériumok alapján:
-- Funkció:
-  - Szűri a járműveket a megadott kritériumok alapján
-  - Brand, color, transmission, year, ártartomány szerinti szűrés
-  - Rendezés növekvő vagy csökkenő sorrendben
-- Bemenet:
-  - Sütiből betöltött cookie token (user_id)
-  - Filters objektum a kérés törzsében (brand, color, transmission, year, min_price, max_price, sort_order)
-- Válasz:
-  - Sikeres szűrés: 201-es válasz státusz
-  - Lekérési hiba esetén: 500-as válasz státusz
 
 ---
 
@@ -323,126 +175,27 @@ XV. filterCars – Jármű szűrés kritériumok alapján:
     6. multer: Fájl feltöltés kezelése
 
 I. login – Admin bejelentkezés:
-- Funkció:
-  - Adminisztrátori bejelentkezés email és jelszó alapján
-  - Csak azok a felhasználók tudnak bejelentkezni, akiknek role="admin"
-  - Jelszó titkosított ellenőrzése (bcrypt.compare)
-  - JWT token generálás és cookie-ba helyezés
-- Bemenet:
-  - email, psw a kérés törzsében
-- Validálás:
-  - Email és jelszó kitöltött-e
-  - Admin szerepű felhasználó létezik-e
-  - Jelszó hossza legalább 8 karakter
-  - Jelszó helyes-e (bcrypt.compare)
-- Válasz:
-  - Sikeres bejelentkezés: 200-as válasz státusz, cookie-ban token
-  - Hibás email vagy jelszó: 401-es válasz státusz
 
 II. whoAmI – Admin adatok lekérdezése:
-- Funkció:
-  - Visszaadja az aktuálisan bejelentkezett admin adatait
-  - Email alapján keresi az adatokat (admin role)
-- Bemenet:
-  - Sütiből betöltött cookie token (req.user)
-- Válasz:
-  - Sikeres lekérés: 200-as válasz státusz
-  - Szerver hiba esetén: 500-as válasz státusz
 
 III. logout – Admin kijelentkezés:
-- Funkció:
-  - Törli a JWT tokent a cookie-ból (res.clearCookie)
-  - Ezzel kijelentkezteti az admin felhasználót
-- Válasz:
-  - Sikeres kijelentkezés: 200-as válasz státusz
-  - Szerver hiba esetén: 500-as válasz státusz
 
 IV. carwithimgupload – Jármű feltöltése képekkel:
-- Funkció:
-  - Új jármű létrehozása és több kép feltöltése (max 10 kép)
-  - Képfájlok áthelyezése ideiglenes mappából végleges helyre
-  - Minden képhez menti az elérési útvonalat a vehicles_img táblába
-- Bemenet:
-  - Sütiből betöltött cookie token (req.user)
-  - Kategória, brand, model, color, transmission, license_plate, year, price_per_day adatok
-  - req.files (feltöltött képek tömbje)
-- Validálás:
-  - Minden szükséges mező kitöltött-e
-  - Képfájlok mérete nem haladja meg a korlátot (20MB)
-  - Csak kép formátumok engedélyezettek (.jpg, .jpeg, .png, stb.)
-- Válasz:
-  - Sikeres feltöltés: 201-es válasz státusz (vehicle_id)
-  - Feltöltési hiba esetén: 500-as válasz státusz
 
 V. delVehicleImg – Járműkép törlése:
-- Funkció:
-  - Törli a járműhöz tartozó képeket az adatbázisból
-  - (Megjegyzés: A valós fájlrendszerről történő törlés nincs implementálva)
-- Bemenet:
-  - vehicle_id az útvonal paraméterből
-- Válasz:
-  - Sikeres törlés: 200-as válasz státusz
-  - Hiba esetén: 500-as válasz státusz
 
 VI. deletewholevehicle – Jármű teljes törlése:
-- Funkció:
-  - Törli a jármű adatokat az adatbázisból
-  - A vehicles_img táblában lévő képek nem törlődnek automatikusan
-- Bemenet:
-  - vehicle_id az útvonal paraméterből
-- Válasz:
-  - Sikeres törlés: 204-es (No Content) válasz státusz
-  - Nem létező jármű esetén: 404-es válasz státusz
-  - Hiba esetén: 500-as válasz státusz
+
 
 VII. editcar – Jármű adatainak módosítása:
-- Funkció:
-  - Meglévő jármű adatainak frissítése (kategória, brand, model, color, transmission, license_plate, year, price_per_day)
-- Bemenet:
-  - vehicle_id az útvonal paraméterből
-  - A módosítandó adatok a kérés törzsében
-- Válasz:
-  - Sikeres módosítás: 200-as válasz státusz
-  - Nem található jármű esetén: 404-es válasz státusz
-  - Hiba esetén: 500-as válasz státusz
 
 VIII. showcdwi – Összes jármű lekérdezése (megtalálható képpel):
-- Funkció:
-  - Lekéri az összes járművet a vehicles táblából
-  - A mysql2/promise formátumban adja vissza az eredményt (result[0])
-- Válasz:
-  - Sikeres lekérés: 200-as válasz státusz (result objektum)
-  - Hiba esetén: 500-as válasz státusz
 
 IX. allusers – Összes felhasználó lekérdezése:
-- Funkció:
-  - Lekéri az összes felhasználót a users táblából
-- Válasz:
-  - Sikeres lekérés: 200-as válasz státusz (result objektum)
-  - Hiba esetén: 500-as válasz státusz
 
 X. editoneuser – Felhasználó adatainak módosítása (admin jogosultsággal):
-- Funkció:
-  - Módosítja egy felhasználó nevét, emailét, jelszavát és szerepkörét
-  - Adminisztrátori jogosultság szükséges (JWT + admin middleware)
-- Bemenet:
-  - user_id az útvonal paraméterből
-  - username, email, password, role a kérés törzsében
-- Válasz:
-  - Sikeres módosítás: 200-as válasz státusz
-  - Nem található felhasználó esetén: 404-es válasz státusz
-  - Hiba esetén: 500-as válasz státusz
 
 XI. banuser – Felhasználó törlése (bánás):
-- Funkció:
-  - Törli a megadott felhasználót az adatbázisból
-  - Adminisztrátori jogosultság szükséges
-- Bemenet:
-  - user_id az útvonal paraméterből
-- Válasz:
-  - Sikeres törlés: 204-es (No Content) válasz státusz
-  - Nem létező felhasználó esetén: 404-es válasz státusz
-  - Hiba esetén: 500-as válasz státusz
 
 ---
 
