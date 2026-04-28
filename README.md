@@ -1,700 +1,1212 @@
-# Urban Rental - Backend API
-
-A car rental management system backend built with Node.js, Express, and MySQL. This API provides comprehensive functionality for managing vehicles, users, reservations, rentals, and administrative operations.
-
-## Table of Contents
-
-- [Features](#features)
-- [Technologies](#technologies)
-- [Project Structure](#project-structure)
-- [Database Schema](#database-schema)
-- [API Endpoints](#api-endpoints)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Environment Variables](#environment-variables)
-- [Usage](#usage)
-- [Authentication](#authentication)
-- [Middleware](#middleware)
-
-## Features
-
-### User Management
-- User registration with email validation and password hashing (bcrypt)
-- Secure login/logout with JWT tokens and HTTP-only cookies
-- Profile management (view, edit, delete account)
-- Profile picture upload and management
-- View all available cars with images
-
-### Vehicle Management
-- Browse all vehicles with their images
-- Admin can add new vehicles with multiple images
-- Edit vehicle details (category, brand, model, color, transmission, license plate, year, price)
-- Delete vehicles from the database
-- Vehicle image upload and management
-- Category-based vehicle classification
-
-### Reservation System
-- Book vehicles for specific date ranges
-- Real-time availability checking to prevent double bookings
-- View user's own reservations
-- Update or cancel existing reservations
-- Admin can view, edit, and delete all reservations
-
-### Rental Management
-- Create new rentals from reservations
-- Track rental status (active, completed)
-- Record actual return dates and damage notes
-- View all rentals and user-specific rentals
-- Update and delete rental records
-
-### Filtering & Search
-- Filter vehicles by brand, color, transmission type, year
-- Sort by price (ascending/descending)
-- Price range filtering (min/max)
-
-### Admin Functions
-- Admin dashboard with full system access
-- User management (view all users, edit user details, ban users)
-- Vehicle and category management
-- Reservation oversight
-- Rental management
-
-## Technologies
-
-| Technology | Version | Description |
-|------------|---------|-------------|
-| Node.js | Latest LTS | JavaScript runtime for server-side execution |
-| Express.js | 5.2.1 | Web framework for building RESTful APIs |
-| MySQL2 | 3.17.2 | MySQL database driver with Promise support |
-| bcrypt | 6.0.0 | Password hashing and verification |
-| jsonwebtoken | 9.0.3 | JWT token generation and verification |
-| cookie-parser | 1.4.7 | Cookie parsing middleware |
-| cors | 2.8.6 | Cross-Origin Resource Sharing middleware |
-| dotenv | 17.3.1 | Environment variable management |
-| multer | 2.0.2 | File upload handling (images) |
-
-## Project Structure
-
-```
-urban-rental/
-├── config/                 # Configuration files
-│   └── dotenvConfig.js     # Environment variable configuration
-├── controllers/            # Business logic layer
-│   ├── adminController.js          # Admin authentication and vehicle management
-│   ├── AdminReservationCont.js    # Admin reservation management
-│   ├── categoryController.js      # Vehicle category operations
-│   ├── FilterController.js        # Vehicle filtering functionality
-│   ├── RentalController.js        # Rental management operations
-│   ├── userController.js          # User authentication and profile management
-│   └── UserreservationCont.js     # User reservation operations
-├── db/
-│   └── db.js               # MySQL database connection pool
-├── middleware/             # Custom middleware
-│   ├── adminMiddleware.js         # Admin authorization check
-│   ├── uploadMiddleware.js        # Vehicle image upload configuration
-│   ├── userMiddleware.js          # User authentication middleware
-│   └── userpicuploadMiddleware.js # Profile picture upload middleware
-├── models/                 # Database models (DAO layer)
-│   ├── adminModel.js         # Admin database operations
-│   ├── AdminreserveModel.js  # Admin reservation model
-│   ├── cardataModel.js       # Vehicle data model
-│   ├── carImgModel.js        # Vehicle image model
-│   ├── categoryModel.js      # Category model
-│   ├── filterModels.js       # Filtering functionality
-│   ├── rentalModel.js        # Rental model
-│   ├── reserveModel.js       # Reservation model
-│   └── userModel.js          # User data model
-├── routes/                 # API route definitions
-│   ├── adminRoutes.js     # Admin endpoint routes
-│   ├── notLoggedinRoutes.js # Public routes (no auth required)
-│   └── userRoutes.js      # User endpoint routes
-├── public/                 # Static files
-│   ├── carimgs/           # Vehicle images storage
-│   │   └── temp/          # Temporary upload directory
-│   └── userpics/          # User profile pictures storage
-├── app.js                  # Express application setup
-├── server.js               # Server startup script
-└── README.md               # This documentation file
-```
-
-## Database Schema
-
-### Tables
-
-#### `users`
-Stores user and admin accounts.
-
-| Column | Type | Description |
-|--------|------|-------------|
-| user_id | INT (PK, Auto) | Unique user identifier |
-| username | VARCHAR(255) | User's display name |
-| email | VARCHAR(255) | User's email address (unique) |
-| password | VARCHAR(255) | Bcrypt-hashed password |
-| role | ENUM('user', 'admin') | User role |
-| created_at | TIMESTAMP | Account creation timestamp |
-
-#### `users_img`
-Stores user profile picture paths.
-
-| Column | Type | Description |
-|--------|------|-------------|
-| img_id | INT (PK, Auto) | Image identifier |
-| user_id | INT (FK) | Reference to users table |
-| user_img | VARCHAR(500) | Path to the image file |
-
-#### `vehicle_category`
-Stores vehicle categories (e.g., Sedan, SUV, Luxury).
-
-| Column | Type | Description |
-|--------|------|-------------|
-| category_id | INT (PK, Auto) | Category identifier |
-| name | VARCHAR(255) | Category name |
-
-#### `vehicles`
-Stores car information.
-
-| Column | Type | Description |
-|--------|------|-------------|
-| vehicle_id | INT (PK, Auto) | Vehicle identifier |
-| category_id | INT (FK) | Reference to vehicle_category |
-| brand | VARCHAR(255) | Car manufacturer |
-| model | VARCHAR(255) | Car model |
-| color | VARCHAR(100) | Car color |
-| transmission | ENUM('automatic', 'manual') | Transmission type |
-| license_plate | VARCHAR(20) | Vehicle license plate number |
-| year | INT | Manufacturing year |
-| price_per_day | DECIMAL(10,2) | Rental price per day |
-
-#### `vehicles_img`
-Stores vehicle image paths.
-
-| Column | Type | Description |
-|--------|------|-------------|
-| img_id | INT (PK, Auto) | Image identifier |
-| vehicle_id | INT (FK) | Reference to vehicles table |
-| img | VARCHAR(500) | Path to the image file |
-
-#### `reservations`
-Stores vehicle booking requests.
-
-| Column | Type | Description |
-|--------|------|-------------|
-| reservation_id | INT (PK, Auto) | Reservation identifier |
-| user_id | INT (FK) | Reference to users table |
-| vehicle_id | INT (FK) | Reference to vehicles table |
-| pickup_date | DATE | Planned pickup date |
-| return_date | DATE | Planned return date |
-| status | ENUM('lefoglalva', 'active_rental', 'cancelled', 'completed') | Reservation status |
-| created_at | TIMESTAMP | Reservation creation timestamp |
-
-#### `rentals`
-Stores actual rental records.
-
-| Column | Type | Description |
-|--------|------|-------------|
-| rental_id | INT (PK, Auto) | Rental identifier |
-| reservation_id | INT (FK) | Reference to reservations table |
-| vehicle_id | INT (FK) | Reference to vehicles table |
-| user_id | INT (FK) | Reference to users table |
-| start_time | DATETIME | Actual rental start time |
-| expected_return | DATETIME | Expected return time |
-| actual_return | DATETIME | Actual return time |
-| status | ENUM('active', 'completed') | Rental status |
-| damage_notes | TEXT | Notes about vehicle condition |
-
-## API Endpoints
-
-### Global (Public) Routes
-**Base URL:** `/global`
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/cars` | Get all vehicles with images | No |
-| POST | `/filter` | Filter vehicles by criteria | No |
+# UrbanRental Backend
+---
+## Készítette:
+UrbanRental Fejlesztő Csapat
 
 ---
 
-### User Routes
-**Base URL:** `/users`
+# Backend Felépítése:
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/register` | Register a new user | No |
-| POST | `/login` | Login as a user | No |
-| GET | `/whoami` | Get current user info | Yes |
-| POST | `/logout` | Logout the current user | Yes |
-| GET | `/userprofile` | Get user profile with picture | Yes |
-| POST | `/newuserprofile/:user_id` | Upload profile picture | Yes |
-| PUT | `/edituserprofile/:user_id` | Update user profile info | Yes |
-| DELETE | `/deleteuserpic/:user_id` | Delete profile picture | Yes |
-| DELETE | `/deleteuser/:user_id` | Delete user account | Yes |
-| GET | `/cars` | Get all cars (authenticated) | Yes |
-| GET | `/reservation` | Get user's reservations | Yes |
-| POST | `/newreservation` | Create a new reservation | Yes |
-| PUT | `/updatereservation` | Update an existing reservation | Yes |
-| DELETE | `/deletereservation/:reservation_id` | Cancel a reservation | Yes |
-| POST | `/filter` | Filter vehicles (authenticated) | Yes |
+1. API végpontok
+  - Adatbázis
+      - MySQL adatbázis, kapcsolódás dotenv konfiguráció alapján
+    - Auth rendszer
+      - JWT token alapú hitelesítés cookie-kban
+      - Felhasználói és adminisztrátori bejelentkezés
+    - Postman tesztelés: Az API végpontok Postmanben való teszteléséhez használható
+    - A weboldal linkje:
+      - Frontend: https://urbanrentalbaross.netlify.app
+
+---
+# Fő Csomagok
+
+2. Csomagok/Middleware-ek:
+   - express:
+      - Web Framework az API létrehozásához
+      - express.json() – JSON kérések kezelése
+   - cookie-parser:
+       - cookieParser() – Cookie-k kezelése a JWT token elhelyezéséhez
+   - cors:
+       - CORS beállítások a frontend (localhost:5173, netlify) hozzáféréséhez
+    - jsonwebtoken:
+        - jwt.sign() – JWT token generálás
+        - jwt.verify() – Token érvényességének ellenőrzése
+     - bcryptjs:
+         - Jelszavak titkosítása (bcrypt.hash)
+         - Jelszó összehasonlítás (bcrypt.compare)
+   - multer:
+       - Fájlok feltöltésére (képek, profilképek)
+     - mysql2/promise:
+        - MySQL adatbázis kapcsolat létrehozása
+        - Connection pool használata párhuzamos lekérdezésekhez
 
 ---
 
-### Admin Routes
-**Base URL:** `/admin`
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/login` | Login as an admin | No |
-| GET | `/whoami` | Get current admin info | Yes (Admin) |
-| POST | `/logout` | Logout the current admin | Yes (Admin) |
-| POST | `/carwithimgupload` | Upload vehicle with images | Yes (Admin) |
-| DELETE | `/deletecarimg/:vehicle_id` | Delete vehicle image | Yes (Admin) |
-| GET | `/adminshowallcars` | Get all vehicles with images | Yes (Admin) |
-| DELETE | `/deletewholecar/:vehicle_id` | Delete a vehicle completely | Yes (Admin) |
-| PUT | `/editvehicle/:vehicle_id` | Update vehicle details | Yes (Admin) |
-| GET | `/allcategory` | Get all vehicle categories | Yes (Admin) |
-| POST | `/newcategory` | Add new vehicle category | Yes (Admin) |
-| PUT | `/updatecategory/:category_id` | Edit a category | Yes (Admin) |
-| DELETE | `/deletecategory/:category_id` | Delete a category | Yes (Admin) |
-| GET | `/alluser` | Get all users | Yes (Admin) |
-| PUT | `/editoneuser/:user_id` | Edit user details | Yes (Admin) |
-| DELETE | `/deleteoneuser/:user_id` | Ban/delete a user | Yes (Admin) |
-| GET | `/reservation` | Get all reservations | Yes (Admin) |
-| PUT | `/updatereservation/:reservation_id` | Update any reservation | Yes (Admin) |
-| DELETE | `/deletereservation/:reservation_id` | Delete any reservation | Yes (Admin) |
-| GET | `/allrentals` | Get all rentals | Yes (Admin) |
-| GET | `/rentals/:user_id` | Get rentals for a specific user | Yes (Admin) |
-| POST | `/newrental` | Create a new rental record | Yes (Admin) |
-| PUT | `/updaterental/:user_id` | Update a rental record | Yes (Admin) |
-| DELETE | `/deleterental` | Delete a rental record | Yes (Admin) |
-| POST | `/filter` | Filter vehicles (admin) | Yes (Admin) |
+# Statikus Fájlok:
+- /public/carimgs mappa elérhető publikus úton (jármű képekért)
+- /public/userpics mappa elérhető publikus úton (felhasználói profilképekért)
 
 ---
 
-## Installation
+# Útvonalak:
 
-### Prerequisites
-- Node.js (v16 or higher recommended)
-- MySQL Server (v5.7 or higher)
-- npm or yarn package manager
+## Felhasználói útvonalak (/users)
+| URL           | Fájl                  | Funkciók |
+| :---          | :---:                 | ---:  |
+| POST /register    | userRoutes.js       | Felhasználó regisztrálása      |
+| POST /login       | userRoutes.js       | Bejelentkezés                  |
+| GET /whoami       | userRoutes.js       | Aktuális felhasználó adatai (JWT szükséges)  |
+| POST /logout      | userRoutes.js       | Kijelentkezés                  |
+| GET /userprofile  | userRoutes.js       | Profil adatok lekérdezése      |
+| POST /newuserprofile/:user_id | userRoutes.js | Profilkép feltöltése    |
+| PUT /edituser/:user_id | userRoutes.js | Felhasználói adatok módosítása |
+| DELETE /deleteuserpic/:user_id | userRoutes.js | Profilkép törlése |
+| DELETE /deleteuser/:user_id | userRoutes.js | Felhasználó törlése |
+| GET /cars         | userRoutes.js       | Összes jármű lekérdezése (megtalálható képpel)  |
+| GET /reservation  | userRoutes.js       | Saját foglalások lekérdezése  |
+| POST /newreservation | userRoutes.js   | Új foglalás létrehozása       |
+| PUT /updatereservation | userRoutes.js | Foglalás módosítása          |
+| DELETE /deletereservation/:reservation_id | userRoutes.js | Foglalás törlése  |
+| POST /filter      | userRoutes.js       | Jármű szűrés kritériumok alapján |
 
-### Steps
+## Adminisztrátori útvonalak (/admin)
+| URL                    | Fájl                  | Funkciók |
+| :---                   | :---:                 | ---:  |
+| POST /login            | adminRoutes.js        | Admin bejelentkezés           |
+| GET /whoami            | adminRoutes.js        | Admin adatok lekérdezése (JWT + admin jogosultság szükséges) |
+| POST /logout           | adminRoutes.js        | Admin kijelentkezés           |
+| POST /carwithimgupload | adminRoutes.js        | Jármű feltöltés képekkel      |
+| DELETE /deletecarimg/:vehicle_id | adminRoutes.js | Járműkép törlése     |
+| GET /adminshowallcars  | adminRoutes.js        | Összes jármű lekérdezése (megtalálható képpel) |
+| DELETE /deletewholecar/:vehicle_id | adminRoutes.js | Jármű teljes törlése |
+| PUT /editvehicle/:vehicle_id | adminRoutes.js  | Jármű adatainak módosítása    |
+| GET /allcategory       | adminRoutes.js        | Kategóriák lekérdezése        |
+| POST /newcategory      | adminRoutes.js        | Új kategória létrehozása      |
+| PUT /updatecategory/:category_id | adminRoutes.js | Kategória módosítása  |
+| DELETE /deletecategory/:category_id | adminRoutes.js | Kategória törlése |
+| GET /alluser           | adminRoutes.js        | Összes felhasználó lekérdezése |
+| PUT /editoneuser/:user_id | adminRoutes.js       | Felhasználó adatainak módosítása |
+| DELETE /deleteoneuser/:user_id | adminRoutes.js   | Felhasználó törlése (bánás)  |
+| GET /reservation       | adminRoutes.js        | Összes foglalás lekérdezése (admin oldalról) |
+| PUT /updatereservation/:reservation_id | adminRoutes.js | Foglalás módosítása (admin) |
+| DELETE /deletereservation/:reservation_id | adminRoutes.js | Foglalás törlése (admin) |
+| GET /allrentals        | adminRoutes.js        | Összes kibérlés lekérdezése   |
+| GET /rentals/:user_id  | adminRoutes.js        | Felhasználó kibérléseinek lekérdezése |
+| POST /newrental        | adminRoutes.js        | Új kibérlés létrehozása       |
+| PUT /updaterental/:user_id | adminRoutes.js      | Kibérlés módosítása           |
+| DELETE /deleterental   | adminRoutes.js        | Kibérlés törlése              |
+| POST /filter           | adminRoutes.js        | Jármű szűrés kritériumok alapján |
 
-1. **Clone the repository**
-```bash
-git clone <repository-url>
-cd urban-rental
-```
+## Nyilvános útvonalak (/global)
+| URL           | Fájl                  | Funkciók |
+| :---          | :---:                 | ---:  |
+| GET /cars     | notLoggedinRoutes.js  | Összes jármű lekérdezése (megtalálható képpel) - bejelentkezés nélkül is elérhető |
+| POST /filter  | notLoggedinRoutes.js  | Jármű szűrés kritériumok alapján - bejelentkezés nélkül is elérhető |
 
-2. **Install dependencies**
-```bash
-npm install
-```
-
-3. **Set up the database**
-Create a MySQL database and import the schema:
-```sql
-CREATE DATABASE urban_rental;
-
-USE urban_rental;
-
--- Create users table
-CREATE TABLE `users` (
-  `user_id` INT AUTO_INCREMENT PRIMARY KEY,
-  `username` VARCHAR(255) NOT NULL,
-  `email` VARCHAR(255) UNIQUE NOT NULL,
-  `password` VARCHAR(255) NOT NULL,
-  `role` ENUM('user', 'admin') DEFAULT 'user',
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Create users_img table
-CREATE TABLE `users_img` (
-  `img_id` INT AUTO_INCREMENT PRIMARY KEY,
-  `user_id` INT NOT NULL,
-  `user_img` VARCHAR(500) NOT NULL,
-  FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE
-);
-
--- Create vehicle_category table
-CREATE TABLE `vehicle_category` (
-  `category_id` INT AUTO_INCREMENT PRIMARY KEY,
-  `name` VARCHAR(255) NOT NULL
-);
-
--- Create vehicles table
-CREATE TABLE `vehicles` (
-  `vehicle_id` INT AUTO_INCREMENT PRIMARY KEY,
-  `category_id` INT NOT NULL,
-  `brand` VARCHAR(255) NOT NULL,
-  `model` VARCHAR(255) NOT NULL,
-  `color` VARCHAR(100),
-  `transmission` ENUM('automatic', 'manual') NOT NULL,
-  `license_plate` VARCHAR(20) UNIQUE NOT NULL,
-  `year` INT NOT NULL,
-  `price_per_day` DECIMAL(10,2) NOT NULL,
-  FOREIGN KEY (`category_id`) REFERENCES `vehicle_category`(`category_id`)
-);
-
--- Create vehicles_img table
-CREATE TABLE `vehicles_img` (
-  `img_id` INT AUTO_INCREMENT PRIMARY KEY,
-  `vehicle_id` INT NOT NULL,
-  `img` VARCHAR(500) NOT NULL,
-  FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles`(`vehicle_id`) ON DELETE CASCADE
-);
-
--- Create reservations table
-CREATE TABLE `reservations` (
-  `reservation_id` INT AUTO_INCREMENT PRIMARY KEY,
-  `user_id` INT NOT NULL,
-  `vehicle_id` INT NOT NULL,
-  `pickup_date` DATE NOT NULL,
-  `return_date` DATE NOT NULL,
-  `status` ENUM('lefoglalva', 'active_rental', 'cancelled', 'completed') DEFAULT 'lefoglalva',
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE,
-  FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles`(`vehicle_id`)
-);
-
--- Create rentals table
-CREATE TABLE `rentals` (
-  `rental_id` INT AUTO_INCREMENT PRIMARY KEY,
-  `reservation_id` INT NOT NULL,
-  `vehicle_id` INT NOT NULL,
-  `user_id` INT NOT NULL,
-  `start_time` DATETIME,
-  `expected_return` DATETIME,
-  `actual_return` DATETIME,
-  `status` ENUM('active', 'completed') DEFAULT 'active',
-  `damage_notes` TEXT,
-  FOREIGN KEY (`reservation_id`) REFERENCES `reservations`(`reservation_id`),
-  FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles`(`vehicle_id`),
-  FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`)
-);
-```
-
-4. **Configure environment variables**
-Create a `.env` file in the root directory (see [Configuration](#configuration) section)
-
-5. **Run the application**
-```bash
-npm run dev
-```
-The server will start on `http://localhost:<PORT>` (default port 3000).
+## Fizetési útvonalak (/api/payments)
+| URL              | Fájl                  | Funkciók |
+| :---             | :---:                 | ---:  |
+| POST /process    | paymentRoutes.js      | Szimulált fizetés feldolgozása (biller típus) |
+| POST /calculate  | paymentRoutes.js      | Kibérles árának számítása |
 
 ---
 
-## Configuration
+# Backend adatok:
 
-### Directory Structure Setup
+ - config/dotenvConfig.js:
+   - HOST: A szerver hosztja (alapértelmezett)
+   - PORT: A szerver portja
+   - DB_HOST: MySQL adatbázis host
+   - DB_USER: MySQL felhasználónév
+   - DB_PASSWORD: MySQL jelszó
+   - DB_NAME: Adatbázis neve
+   - DB_TIMEZONE: Időzóna (Z/UTC)
+   - JWT_SECRET: JWT token aláírásához szükséges kulcs
+   - JWT_EXPIRES_IN: Token érvényességi idő
+   - COOKIE_NAME: Sütik neve a JWT tokennak
 
-The application requires specific directories for image uploads:
+<details>
+  
+<summary>Controllers:</summary>
 
-```bash
-mkdir -p public/carimgs/temp
-mkdir -p public/userpics
-```
+- 👤 userController.js:
+  - ### **Függőségek:**
+    1. bcryptjs: Jelszavak titkosítása és ellenőrzése
+    2. jsonwebtoken: JWT token generálás és validálás
+    3. database (userModel): Az adatbázis kapcsolódása és SQL lekérdezések végrehajtása
+    4. config/dotenvConfig: Környezeti változók betöltése
 
-On Windows:
-```cmd
-mkdir public\carimgs\temp
-mkdir public\userpics
-```
+I. register – Regisztráció:
+- Funkció:
+  - Új felhasználó regisztrálása az adatbázisban
+  - Email formátum validálása
+  - Jelszó legalább 8 karakter hosszúságú legyen
+  - Az email cím egyediségének ellenőrzése (nem lehet már létező felhasználó)
+- Bemenet:
+  - username, email, psw a kérés törzsében
+- Validálás:
+  - Minden mező kitöltött-e
+  - Email formátum érvényes-e
+  - Jelszó hossza legalább 8 karakter
+  - Email egyedi-e
+- Válasz:
+  - Sikeres regisztráció: 201-es válasz státusz (insertId)
+  - Hiányzó adatok: 400-as válasz státusz
+  - Email már létezik: 409-es válasz státusz
 
-### Environment Variables
+II. login – Bejelentkezés:
+- Funkció:
+  - Felhasználói bejelentkezés email és jelszó alapján
+  - Jelszó összehasonlítás bcrypt.compare segítségével
+  - JWT token generálás a sikeres azonosítás után
+  - Token elhelyezése cookie-ban (config.COOKIE_NAME)
+- Bemenet:
+  - email, psw a kérés törzsében
+- Validálás:
+  - Email és jelszó mezők kitöltött-e
+  - Felhasználó létezik-e
+  - Jelszó helyes-e
+- Válasz:
+  - Sikeres bejelentkezés: 200-as válasz státusz, cookie-ban token
+  - Hiányzó adatok: 400-as válasz státusz
+  - Hibás email vagy jelszó: 401-es válasz státusz
 
-Create a `.env` file in the root directory with the following variables:
+III. whoAmI – Aktuális felhasználó adatai:
+- Funkció:
+  - Visszaadja az aktuálisan bejelentkezett felhasználó adatait (JWT tokenből)
+  - req.user objektumban van elérhető a JWT dekódolt tartalma
+- Bemenet:
+  - Sütiből betöltött cookie token
+- Validálás:
+  - Bejelentkezett felhasználó létezik-e (req.user)
+- Válasz:
+  - Sikeres lekérés: 200-as válasz státusz (user_id, username, email, role, created_at)
+  - Nincs bejelentkezve: 401-es válasz státusz
 
-```env
-# Server Configuration
-HOST=0.0.0.0
-PORT=3000
+IV. logout – Kijelentkezés:
+- Funkció:
+  - Törli a JWT tokent a cookie-ból (res.clearCookie)
+  - Ezzel kijelentkezteti a felhasználót
+- Válasz:
+  - Sikeres kijelentkezés: 200-as válasz státusz
+  - Szerver hiba esetén: 500-as válasz státusz
 
-# Database Configuration
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=your_database_password
-DB_NAME=urban_rental
-DB_TIMEZONE=+00:00
+V. showuserprofile – Profil adatok lekérdezése:
+- Funkció:
+  - Lekéri a felhasználó adatait és profilképét (ha van)
+- Bemenet:
+  - Sütiből betöltött cookie token
+- Válasz:
+  - Sikeres lekérés: 200-as válasz státusz (user adatok + img objektum)
+  - Nincs bejelentkezve: 401-es válasz státusz
 
-# JWT Configuration
-JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
-JWT_EXPIRES_IN=7d
-COOKIE_NAME=auth_token
-```
+VI. newuserprofilepic – Profilkép feltöltése:
+- Funkció:
+  - Felhasználó profilképének feltöltése
+  - Képfájl nevének formázása: user_id mappába, dátum előtaggal
+- Bemenet:
+  - Sütiből betöltött cookie token (user_id)
+  - req.file (feltöltött kép)
+- Válasz:
+  - Sikeres feltöltés: 201-es válasz státusz
+  - Feltöltési hiba esetén: 500-as válasz státusz
 
-#### Environment Variable Descriptions
+VII. edituser – Felhasználói adatok módosítása:
+- Funkció:
+  - Felhasználó nevének, emailének és jelszavának módosítása
+  - Ha az új érték üres, megtartja a régi értéket
+  - Jelszó esetén újra titkosítja bcrypt.hash segítségével
+- Bemenet:
+  - Sütiből betöltött cookie token (user_id)
+  - username, email, password a kérés törzsében (opcionális mezők)
+- Válasz:
+  - Sikeres módosítás: 200-as válasz státusz
+  - Módosítási hiba esetén: 500-as válasz státusz
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `HOST` | Server host address | 0.0.0.0 |
-| `PORT` | Server port number | 3000 |
-| `DB_HOST` | MySQL database host | localhost |
-| `DB_USER` | Database username | root |
-| `DB_PASSWORD` | Database password | (required) |
-| `DB_NAME` | Database name | urban_rental |
-| `DB_TIMEZONE` | Timezone for database operations | +00:00 |
-| `JWT_SECRET` | Secret key for JWT token signing | (required - use strong random string) |
-| `JWT_EXPIRES_IN` | Token expiration time | 7d |
-| `COOKIE_NAME` | Name of the authentication cookie | auth_token |
+VIII. deleteuserprofilepic – Profilkép törlése:
+- Funkció:
+  - Törli a profilképet az adatbázisból és fájlrendszerről is
+  - Törlés után törli a teljes mappát is (recursive delete)
+- Bemenet:
+  - Sütiből betöltött cookie token (user_id)
+- Válasz:
+  - Sikeres törlés: 200-as válasz státusz
+  - Törlési hiba esetén: 500-as válasz státusz
 
----
+IX. deleteuser – Felhasználó törlése:
+- Funkció:
+  - Teljes felhasználói adatbázisbejegyzés törlése
+- Bemenet:
+  - Sütiből betöltött cookie token (user_id)
+- Válasz:
+  - Sikeres törlés: 200-as válasz státusz
+  - Törlési hiba esetén: 500-as válasz státusz
 
-## Usage
+X. viewcars – Összes jármű lekérdezése (megtalálható képpel):
+- Funkció:
+  - Lekéri az összes járművet a vehicles táblából
+  - JOIN segítségével hozzáadja a képeket is (vehicles_img tábla)
+- Válasz:
+  - Sikeres lekérés: 200-as válasz státusz (tömb formájában)
+  - Lekérési hiba esetén: 500-as válasz státusz
 
-### Starting the Server
+XI. viewReservations – Saját foglalások lekérdezése:
+- Funkció:
+  - Lekéri a bejelentkezett felhasználó összes foglalását
+  - JOIN segítségével hozzáadja a jármű adatait is (vehicles tábla)
+- Bemenet:
+  - Sütiből betöltött cookie token (user_id)
+- Válasz:
+  - Sikeres lekérés: 200-as válasz státusz
+  - Lekérési hiba esetén: 500-as válasz státusz
 
-Development mode with auto-restart:
-```bash
-npm run dev
-```
+XII. NewReservations – Új foglalás létrehozása:
+- Funkció:
+  - Új járműfoglalás létrehozása
+  - Időpont konfliktusok ellenőrzése (checkAvailability)
+  - Ha a jármű már foglalt az adott időszakra, hibát küld
+- Bemenet:
+  - Sütiből betöltött cookie token (user_id)
+  - vehicle_id, pickup_date, return_date a kérés törzsében
+- Validálás:
+  - Minden mező kitöltött-e
+  - Időpont konfliktus van-e (checkAvailability függvény)
+- Válasz:
+  - Sikeres foglalás: 201-es válasz státusz
+  - Konfliktus (jármű már foglalt): 409-es válasz státusz
+  - Hiba esetén: 500-as válasz státusz
 
-Production mode (without nodemon):
-```bash
-node server.js
-```
+XIII. UReservations – Foglalás módosítása:
+- Funkció:
+  - Meglévő foglalás adatainak módosítása (vehicle_id, pickup_date, return_date, status)
+- Bemenet:
+  - vehicle_id, pickup_date, return_date, status, reservation_id a kérés törzsében
+- Validálás:
+  - reservation_id és vehicle_id kitöltött-e
+- Válasz:
+  - Sikeres módosítás: 200-as válasz státusz
+  - Hiba esetén: 500-as válasz státusz
 
-### API Request Format
+XIV. DReservations – Foglalás törlése:
+- Funkció:
+  - Saját foglalás törlése (csak saját felhasználó törölheti)
+- Bemenet:
+  - reservation_id az útvonal paraméterből
+  - user_id a JWT tokenből
+- Validálás:
+  - reservation_id kitöltött-e
+- Válasz:
+  - Sikeres törlés: 200-as válasz státusz
+  - Hiba esetén: 500-as válasz státusz
 
-All requests should use appropriate HTTP methods and content types:
-
-#### JSON Requests
-```json
-POST /users/login
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "psw": "password123"
-}
-```
-
-#### Form Data with File Upload
-For vehicle image uploads:
-```
-Content-Type: multipart/form-data
-
-body: {
-  category_id: 1,
-  brand: "Toyota",
-  model: "Camry",
-  color: "Black",
-  transmission: "automatic",
-  license_plate: "ABC-123",
-  year: 2023,
-  price_per_day: "75.99"
-}
-files: {
-  img: [file1, file2, ...] // up to 10 images
-}
-```
-
-### Example API Calls
-
-#### User Registration
-```bash
-curl -X POST http://localhost:3000/users/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "john_doe",
-    "email": "john@example.com",
-    "psw": "password123"
-  }'
-```
-
-#### User Login
-```bash
-curl -X POST http://localhost:3000/users/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "john@example.com",
-    "psw": "password123"
-  }' \
-  --cookie-jar cookies.txt
-```
-
-#### Get User Profile (requires authentication)
-```bash
-curl http://localhost:3000/users/userprofile \
-  --cookie cookies.txt
-```
-
-#### Filter Vehicles
-```bash
-curl -X POST http://localhost:3000/global/filter \
-  -H "Content-Type: application/json" \
-  -d '{
-    "brand": "Toyota",
-    "transmission": "automatic",
-    "min_price": 50,
-    "max_price": 100,
-    "sort_order": "high_to_low"
-  }'
-```
-
----
-
-## Authentication
-
-### Token-Based Authentication
-The API uses JWT tokens stored in HTTP-only cookies for authentication.
-
-#### Cookie Configuration
-- **Name**: Defined by `COOKIE_NAME` environment variable (default: `auth_token`)
-- **HttpOnly**: true (prevents JavaScript access)
-- **Secure**: false (set to true in production with HTTPS)
-- **SameSite**: lax
-- **MaxAge**: 7 days
-
-### Authentication Flow
-
-1. User sends login credentials (email + password)
-2. Server validates credentials against database
-3. On success, server generates JWT token and sets it as HTTP-only cookie
-4. Client includes cookie in subsequent requests
-5. Server verifies token on protected endpoints
-
-### Protected Endpoints
-Any endpoint with `Auth Required: Yes` requires a valid authentication token in the cookies.
-
----
-
-## Middleware
-
-### Custom Middleware
-
-#### 1. Authentication (`userMiddleware.js`)
-```javascript
-const { auth } = require('./middleware/userMiddleware')
-```
-- Extracts JWT from cookie
-- Verifies token signature and expiration
-- Attaches decoded user info to `req.user`
-- Returns 401 Unauthorized if invalid
-
-#### 2. Admin Authorization (`adminMiddleware.js`)
-```javascript
-const { admin } = require('./middleware/adminMiddleware')
-```
-- Checks if `req.user.role === 'admin'`
-- Returns 409 Conflict if not an admin
-- Should be chained after auth middleware
-
-#### 3. Vehicle Image Upload (`uploadMiddleware.js`)
-```javascript
-const { upload } = require('./middleware/uploadMiddleware')
-```
-- Uses Multer for file uploads
-- Maximum file size: 20MB per image
-- Accepts: jpg, jpeg, png, gif, svg, webp, avif, bmp, tiff
-- Stores temporarily in `public/carimgs/temp/`
-
-#### 4. Profile Picture Upload (`userpicuploadMiddleware.js`)
-```javascript
-const { useruploadpic } = require('./middleware/userpicuploadMiddleware')
-```
-- User-specific upload directory: `public/userpics/{user_id}/`
-- Maximum file size: 10MB
-- File naming format: `{date}-{originalname}`
-- Auto-creates user directory
-
-### Middleware Chain Example
-```javascript
-// Admin route with auth + admin check
-app.post('/admin/upload', auth, admin, upload.array('img'), controllerFunction)
-```
+XV. filterCars – Jármű szűrés kritériumok alapján:
+- Funkció:
+  - Szűri a járműveket a megadott kritériumok alapján
+  - Brand, color, transmission, year, ártartomány szerinti szűrés
+  - Rendezés növekvő vagy csökkenő sorrendben
+- Bemenet:
+  - Sütiből betöltött cookie token (user_id)
+  - Filters objektum a kérés törzsében (brand, color, transmission, year, min_price, max_price, sort_order)
+- Válasz:
+  - Sikeres szűrés: 201-es válasz státusz
+  - Lekérési hiba esetén: 500-as válasz státusz
 
 ---
 
-## Security Considerations
+- 👨‍💼 adminController.js:
+  - ### **Függőségek:**
+    1. bcryptjs: Jelszavak titkosítása és ellenőrzése
+    2. jsonwebtoken: JWT token generálás
+    3. database (adminModel): Admin adatbázis lekérdezések
+    4. database (carDataModel, carImgModel): Járművek kezelése
+    5. database (userModel): Felhasználók kezelése (admin jogosultsággal)
+    6. multer: Fájl feltöltés kezelése
 
-### Current Security Features
-1. **Password Hashing**: bcrypt with 10 salt rounds
-2. **SQL Injection Protection**: Parameterized queries
-3. **JWT Tokens**: Time-limited authentication
-4. **HTTP-only Cookies**: Prevents XSS token theft
-5. **CORS Configuration**: Origin restriction (localhost:5173)
-6. **File Upload Validation**: MIME type and extension checking
+I. login – Admin bejelentkezés:
+- Funkció:
+  - Adminisztrátori bejelentkezés email és jelszó alapján
+  - Csak azok a felhasználók tudnak bejelentkezni, akiknek role="admin"
+  - Jelszó titkosított ellenőrzése (bcrypt.compare)
+  - JWT token generálás és cookie-ba helyezés
+- Bemenet:
+  - email, psw a kérés törzsében
+- Validálás:
+  - Email és jelszó kitöltött-e
+  - Admin szerepű felhasználó létezik-e
+  - Jelszó hossza legalább 8 karakter
+  - Jelszó helyes-e (bcrypt.compare)
+- Válasz:
+  - Sikeres bejelentkezés: 200-as válasz státusz, cookie-ban token
+  - Hibás email vagy jelszó: 401-es válasz státusz
 
-### Production Recommendations
-1. Set `secure: true` in cookie options (requires HTTPS)
-2. Use environment variables for all sensitive data
-3. Implement rate limiting on login endpoints
-4. Add request logging middleware
-5. Implement input validation middleware
-6. Use a production-ready database connection pool manager
-7. Add CSRF protection if using cookies for auth
-8. Implement password complexity requirements
+II. whoAmI – Admin adatok lekérdezése:
+- Funkció:
+  - Visszaadja az aktuálisan bejelentkezett admin adatait
+  - Email alapján keresi az adatokat (admin role)
+- Bemenet:
+  - Sütiből betöltött cookie token (req.user)
+- Válasz:
+  - Sikeres lekérés: 200-as válasz státusz
+  - Szerver hiba esetén: 500-as válasz státusz
+
+III. logout – Admin kijelentkezés:
+- Funkció:
+  - Törli a JWT tokent a cookie-ból (res.clearCookie)
+  - Ezzel kijelentkezteti az admin felhasználót
+- Válasz:
+  - Sikeres kijelentkezés: 200-as válasz státusz
+  - Szerver hiba esetén: 500-as válasz státusz
+
+IV. carwithimgupload – Jármű feltöltése képekkel:
+- Funkció:
+  - Új jármű létrehozása és több kép feltöltése (max 10 kép)
+  - Képfájlok áthelyezése ideiglenes mappából végleges helyre
+  - Minden képhez menti az elérési útvonalat a vehicles_img táblába
+- Bemenet:
+  - Sütiből betöltött cookie token (req.user)
+  - Kategória, brand, model, color, transmission, license_plate, year, price_per_day adatok
+  - req.files (feltöltött képek tömbje)
+- Validálás:
+  - Minden szükséges mező kitöltött-e
+  - Képfájlok mérete nem haladja meg a korlátot (20MB)
+  - Csak kép formátumok engedélyezettek (.jpg, .jpeg, .png, stb.)
+- Válasz:
+  - Sikeres feltöltés: 201-es válasz státusz (vehicle_id)
+  - Feltöltési hiba esetén: 500-as válasz státusz
+
+V. delVehicleImg – Járműkép törlése:
+- Funkció:
+  - Törli a járműhöz tartozó képeket az adatbázisból
+  - (Megjegyzés: A valós fájlrendszerről történő törlés nincs implementálva)
+- Bemenet:
+  - vehicle_id az útvonal paraméterből
+- Válasz:
+  - Sikeres törlés: 200-as válasz státusz
+  - Hiba esetén: 500-as válasz státusz
+
+VI. deletewholevehicle – Jármű teljes törlése:
+- Funkció:
+  - Törli a jármű adatokat az adatbázisból
+  - A vehicles_img táblában lévő képek nem törlődnek automatikusan
+- Bemenet:
+  - vehicle_id az útvonal paraméterből
+- Válasz:
+  - Sikeres törlés: 204-es (No Content) válasz státusz
+  - Nem létező jármű esetén: 404-es válasz státusz
+  - Hiba esetén: 500-as válasz státusz
+
+VII. editcar – Jármű adatainak módosítása:
+- Funkció:
+  - Meglévő jármű adatainak frissítése (kategória, brand, model, color, transmission, license_plate, year, price_per_day)
+- Bemenet:
+  - vehicle_id az útvonal paraméterből
+  - A módosítandó adatok a kérés törzsében
+- Válasz:
+  - Sikeres módosítás: 200-as válasz státusz
+  - Nem található jármű esetén: 404-es válasz státusz
+  - Hiba esetén: 500-as válasz státusz
+
+VIII. showcdwi – Összes jármű lekérdezése (megtalálható képpel):
+- Funkció:
+  - Lekéri az összes járművet a vehicles táblából
+  - A mysql2/promise formátumban adja vissza az eredményt (result[0])
+- Válasz:
+  - Sikeres lekérés: 200-as válasz státusz (result objektum)
+  - Hiba esetén: 500-as válasz státusz
+
+IX. allusers – Összes felhasználó lekérdezése:
+- Funkció:
+  - Lekéri az összes felhasználót a users táblából
+- Válasz:
+  - Sikeres lekérés: 200-as válasz státusz (result objektum)
+  - Hiba esetén: 500-as válasz státusz
+
+X. editoneuser – Felhasználó adatainak módosítása (admin jogosultsággal):
+- Funkció:
+  - Módosítja egy felhasználó nevét, emailét, jelszavát és szerepkörét
+  - Adminisztrátori jogosultság szükséges (JWT + admin middleware)
+- Bemenet:
+  - user_id az útvonal paraméterből
+  - username, email, password, role a kérés törzsében
+- Válasz:
+  - Sikeres módosítás: 200-as válasz státusz
+  - Nem található felhasználó esetén: 404-es válasz státusz
+  - Hiba esetén: 500-as válasz státusz
+
+XI. banuser – Felhasználó törlése (bánás):
+- Funkció:
+  - Törli a megadott felhasználót az adatbázisból
+  - Adminisztrátori jogosultság szükséges
+- Bemenet:
+  - user_id az útvonal paraméterből
+- Válasz:
+  - Sikeres törlés: 204-es (No Content) válasz státusz
+  - Nem létező felhasználó esetén: 404-es válasz státusz
+  - Hiba esetén: 500-as válasz státusz
 
 ---
 
-## Troubleshooting
+- 📋 RentalController.js:
+  - ### **Függőségek:**
+    1. database (rentalModel): Kibérlésekhez kapcsolódó SQL műveletek
 
-### Common Issues
+I. viewARs – Összes kibérlés lekérdezése:
+- Funkció:
+  - Lekéri az összes kibérlést a rentals táblából
+  - Adminisztrátori funkció (minden kibérlés megtekintése)
+- Válasz:
+  - Sikeres lekérés: 201-es válasz státusz (result objektum)
+  - Lekérési hiba esetén: 500-as válasz státusz
 
-#### 1. Database Connection Error
-```
-Error: ER_ACCESS_DENIED_ERROR
-```
-- Verify DB credentials in `.env` file
-- Ensure MySQL server is running
-- Check user permissions for the database
+II. viewRs – Felhasználó kibérléseinek lekérdezése:
+- Funkció:
+  - Lekéri egy adott felhasználó összes kibérlését
+  - user_id az útvonal paraméterből érkezik
+- Bemenet:
+  - user_id az útvonal paraméterből
+- Válasz:
+  - Sikeres lekérés: 201-es válasz státusz (result objektum)
+  - Lekérési hiba esetén: 500-as válasz státusz
 
-#### 2. File Upload Errors
-```
-MulterError: File too large
-```
-- Increase `MAX_FILE_SIZE` in middleware files if needed
-- Check disk space availability
+III. NewRs – Új kibérlés létrehozása:
+- Funkció:
+  - Új kibérlést hoz létre az adatbázisban
+  - Az updatereservationstatus függvényt is meghívja a foglalás statuszának 'active_rental'-re frissítéséhez
+- Bemenet:
+  - reservation_id, vehicle_id, user_id, start_time, expected_return, actual_return, status, damage_notes a kérés törzsében
+- Válasz:
+  - Sikeres létrehozás: 201-es válasz státusz (result és result2)
+  - Lekérési hiba esetén: 500-as válasz státusz
 
-#### 3. JWT Verification Failed
-```
-JsonWebTokenError: invalid token
-```
-- Ensure `JWT_SECRET` matches between token generation and verification
-- Check server time synchronization (token expiration)
+IV. URs – Kibérlés módosítása:
+- Funkció:
+  - Módosítja egy kibérlés adatait (reservation_id, vehicle_id, start_time, expected_return, actual_return, status, damage_notes)
+  - Ha a status 'completed', akkor a foglalás státuszt is frissíti 'completed'-re
+- Bemenet:
+  - user_id az útvonal paraméterből
+  - reservation_id, vehicle_id, start_time, expected_return, actual_return, status, damage_notes a kérés törzsében
+- Válasz:
+  - Sikeres módosítás: 201-es válasz státusz
+  - Lekérési hiba esetén: 500-as válasz státusz
 
-#### 4. CORS Errors
-```
-Access to fetch at '...' has been blocked by CORS policy
-```
-- Verify frontend origin in `app.js` cors configuration
-- For development, ensure frontend runs on `http://localhost:5173`
-
----
-
-## Development
-
-### Running Tests
-```bash
-npm test
-```
-*Note: Test suite not yet implemented*
-
-### Code Style
-- Uses standard JavaScript conventions
-- Consistent naming: camelCase for functions/variables, PascalCase for classes
-- Module exports at the end of each controller/model file
-
-### Adding New Features
-
-1. Create database queries in `models/` directory
-2. Implement business logic in `controllers/` directory
-3. Define routes in appropriate `routes/` file
-4. Add middleware if needed in `middleware/` directory
-5. Update this README with new endpoint documentation
+V. Drs – Kibérlés törlése:
+- Funkció:
+  - Törli egy kibérlést a rental_id alapján
+- Bemenet:
+  - rental_id az útvonal paraméterből
+- Válasz:
+  - Sikeres törlés: 201-es válasz státusz
+  - Lekérési hiba esetén: 500-as válasz státusz
 
 ---
 
-## License
+- 📋 UserreservationCont.js:
+  - ### **Függőségek:**
+    1. bcryptjs, jsonwebtoken: Hitelesítés (jelenleg nem aktív)
+    2. database (reserveModel): Foglalásokhoz kapcsolódó SQL műveletek
 
-ISC License - See LICENSE file for details.
+I. viewRs – Felhasználói foglalások lekérdezése:
+- Funkció:
+  - Lekéri egy adott felhasználó összes foglalását
+  - user_id az útvonal paraméterből érkezik
+- Bemenet:
+  - user_id az útvonal paraméterből
+- Válasz:
+  - Sikeres lekérés: 201-es válasz státusz (result objektum)
+  - Lekérési hiba esetén: 500-as válasz státusz
+
+II. NewRs – Új felhasználói foglalás létrehozása:
+- Funkció:
+  - Új járműfoglalást hoz létre
+  - pickup_date és return_date mezők kitöltött-e validáció
+  - Konfliktusok ellenőrzése a checkAvailability függvény segítségével
+- Bemenet:
+  - user_id, vehicle_id, pickup_date, return_date az útvonal paraméterből
+- Validálás:
+  - Pickup_date és return_date mezők kitöltött-e
+- Válasz:
+  - Sikeres foglalás: 201-es válasz státusz
+  - Konfliktus (jármű már foglalt): 409-es válasz státusz
+  - Hiba esetén: 500-as válasz státusz
+
+III. URs – Foglalás módosítása:
+- Funkció:
+  - Módosítja egy foglalás adatait (vehicle_id, pickup_date, return_date, status)
+- Bemenet:
+  - vehicle_id, pickup_date, return_date, status az útvonal paraméterből
+- Válasz:
+  - Sikeres módosítás: 201-es válasz státusz
+  - Lekérési hiba esetén: 500-as válasz státusz
+
+IV. Drs – Foglalás törlése:
+- Funkció:
+  - Törli egy foglalást a reservation_id alapján
+- Bemenet:
+  - reservation_id az útvonal paraméterből
+- Válasz:
+  - Sikeres törlés: 201-es válasz státusz
+  - Lekérési hiba esetén: 500-as válasz státusz
 
 ---
 
-## Contributing
+- 📋 AdminReservationCont.js:
+  - ### **Függőségek:**
+    1. bcryptjs, jsonwebtoken: Hitelesítés (jelenleg nem aktív)
+    2. database (AdminreserveModel): Admin oldali foglalásokhoz kapcsolódó SQL műveletek
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+I. viewAdminreservations – Összes admin foglalás lekérdezése:
+- Funkció:
+  - Lekéri az összes foglalást a reservations táblából
+  - Adminisztrátori jogosultság szükséges
+- Válasz:
+  - Sikeres lekérés: 201-es válasz státusz (result objektum)
+  - Lekérési hiba esetén: 500-as válasz státusz
+
+II. UAdminreservations – Admin foglalás módosítása:
+- Funkció:
+  - Módosítja egy foglalás adatait adminisztrátori jogosultsággal
+  - user_id, vehicle_id, pickup_date, return_date, status, created_at mezők módosíthatók
+- Bemenet:
+  - reservation_id az útvonal paraméterből
+  - user_id, vehicle_id, pickup_date, return_date, status, created_at a kérés törzsében
+- Validálás:
+  - Pickup_date és return_date mezők kitöltött-e
+- Válasz:
+  - Sikeres módosítás: 201-es válasz státusz (result objektum)
+  - Lekérési hiba esetén: 500-as válasz státusz
+
+III. DAdminreservations – Admin foglalás törlése:
+- Funkció:
+  - Törli egy foglalást a reservation_id alapján adminisztrátori jogosultsággal
+- Bemenet:
+  - reservation_id az útvonal paraméterből
+- Válasz:
+  - Sikeres törlés: 201-es válasz státusz (result objektum)
+  - Lekérési hiba esetén: 500-as válasz státusz
+
+---
+
+- 💳 paymentController.js:
+  - ### **Függőségek:**
+    1. database (db): MySQL adatbázis kapcsolat
+
+I. processMockPayment – Szimulált fizetés feldolgozása:
+- Funkció:
+  - Szimulál egy fizetési tranzakciót a megadott adatok alapján
+  - Kártyaszám maszkolása (****-****-****-XXXX formátum)
+  - Szimulált időkésleltetés (1 másodperc) a tranzakcióhoz
+  - Visszaadja a tranzakciós adatokat (cardNumber, expiryDate, cardName, amount, currency, timestamp, reservationId)
+- Bemenet:
+  - cardNumber, expiryDate, cardName, cvc, amount, reservationId a kérés törzsében
+- Validálás:
+  - Minden mező kitöltött-e (cardNumber, expiryDate, cardName, cvc, amount)
+- Válasz:
+  - Sikeres fizetés: 200-as válasz státusz (success, message, transaction objektum)
+  - Hiányzó adatok esetén: 400-as válasz státusz
+  - Fizetési hiba esetén: 500-as válasz státusz
+
+II. calculateRentalAmount – Kibérles árának számítása:
+- Funkció:
+  - Kiszámítja a kibérlés teljes árát a pickup_date és return_date alapján
+  - Számolja ki az eltelt napokat (minimum 1 nap)
+  - A végső összeget 2 tizedesjegyre kerekíti
+- Bemenet:
+  - pickupDate, returnDate, pricePerDay a függvény paraméterekben
+- Válasz:
+  - sikeres számítás: days, pricePerDay, totalAmount objektum
+
+III. calculateRentalDays – Kibérles napjainak számítása:
+- Funkció:
+  - Kiszámítja a kibérlés napjainak számát
+  - Számolja ki az eltelt napokat (minimum 1 nap)
+- Bemenet:
+  - pickupDate, returnDate a függvény paraméterekben
+- Válasz:
+  - sikeres számítás: diffDays (egész szám)
+
+IV. getCarPriceById – Jármű árának lekérdezése:
+- Funkció:
+  - Lekéri egy jármű price_per_day értékét a vehicle_id alapján
+- Bemenet:
+  - vehicle_id az SQL paraméterben
+- Válasz:
+  - sikeres lekérés: result[0]?.price_per_day (ha van) vagy 0
+
+---
+
+- 🏷️ categoryController.js:
+  - ### **Függőségek:**
+    1. database (categoryModel): Kategóriákhoz kapcsolódó SQL műveletek
+
+I. viewallC – Összes kategória lekérdezése:
+- Funkció:
+  - Lekéri az összes kategóriát a vehicle_category táblából
+- Válasz:
+  - sikeres lekérés: 201-es válasz státusz (result objektum)
+  - hiba esetén: 500-as válasz státusz
+
+II. addNewC – Új kategória létrehozása:
+- Funkció:
+  - Új kategóriát hoz létre a vehicle_category táblában
+- Bemenet:
+  - name a kérés törzsében
+- Válasz:
+  - sikeres létrehozás: 201-es válasz státusz (result objektum)
+  - hiba esetén: 500-as válasz státusz
+
+III. updateC – Kategória módosítása:
+- Funkció:
+  - Módosítja egy kategória nevét a category_id alapján
+- Bemenet:
+  - category_id az útvonal paraméterből
+  - name a kérés törzsében
+- Válasz:
+  - sikeres módosítás: 200-as válasz státusz
+  - nem található kategória esetén: 404-es válasz státusz
+  - hiba esetén: 500-as válasz státusz
+
+IV. deleteC – Kategória törlése:
+- Funkció:
+  - Törli egy kategóriát a category_id alapján
+- Bemenet:
+  - category_id az útvonal paraméterből
+- Válasz:
+  - sikeres törlés: 201-es válasz státusz
+  - nem található kategória esetén: 404-es válasz státusz
+  - hiba esetén: 500-as válasz státusz
+
+---
+
+- 🔍 FilterController.js:
+  - ### **Függőségek:**
+    1. database (filterModels): Szűréshez kapcsolódó SQL műveletek
+
+I. filterCars – Jármű szűrés kritériumok alapján:
+- Funkció:
+  - Dinamikus SQL lekérdezést hoz létre a szűrési kritériumok alapján
+  - Támogatott szűrési feltételek: brand, color, transmission, year, min_price, max_price, sort_order
+  - Rendezés növekvő vagy csökkenő sorrendben (price_per_day szerint)
+- Bemenet:
+  - filters objektum a kérés törzsében (brand, color, transmission, year, min_price, max_price, sort_order)
+- Validálás:
+  - A szűrési mezők nem üres stringek lehetnek
+- Válasz:
+  - sikeres szűrés: 201-es válasz státusz (result objektum)
+  - hiba esetén: 500-as válasz státusz
+
+---
+
+</details>
+
+<details>
+<summary>Middleware</summary>
+
+- 👤 auth middleware – Felhasználó hitelesítése JWT token alapján
+  - ### **Függőségek:**
+    - jsonwebtoken (jwt): A JSON Web Token (JWT) kezelésére használt könyvtár.
+    - config/dotenvConfig: Környezeti változókat tartalmazó konfigurációs fájl (COOKIE_NAME, JWT_SECRET).
+
+I. auth – Middleware a token ellenőrzésére
+- Funkció:
+  - A middleware ellenőrzi, hogy a kérés tartalmazza-e az érvényes JWT tokent a cookie-ban.
+  - Ha a token érvényes, a felhasználói adatokat hozzáadja a req.user objektumhoz.
+  - Ha nem érvényes a token vagy nincs token, akkor hibát jelez.
+- Bemenet:
+  - cookie: A kérés tartalmazza a config.COOKIE_NAME nevű cookie-t, amely a felhasználó JWT tokenjét tartalmazza.
+- Funkcionalitás:
+  - Token keresése: A middleware megpróbálja megtalálni a tokent a kérés cookie-jában (req.cookies?.[config.COOKIE_NAME]).
+  - Token validálás: A jwt.verify metódus segítségével érvényesíti a tokent a JWT_SECRET kulcs használatával.
+- Hibák:
+  - Ha a token nincs a kérésben, akkor 401-es státuszkóddal hibaüzenet: "Nem vagy bejelentkezve".
+  - Ha a token érvénytelen (jwt.verify hiba), akkor 401-es státuszkóddal hibaüzenet: "cookie error".
+- Válasz:
+  - Sikeres hitelesítés: Ha a token érvényes, a felhasználói adatokat (dekódolt token) hozzáadja a req.user objektumhoz, majd a next() metódust hívja, hogy a következő middleware-t vagy route handler-t lefuttathassa.
+  - Hiba: Ha a token nem található vagy érvénytelen, hibát küld vissza a válaszban.
+
+---
+ 
+- 👨‍💼 admin middleware – Adminisztrátori jogosultság ellenőrzése
+  - ### **Függőségek:**
+    - Nincsenek függőségek, csak a req.user objektumot használja.
+  
+- Funkció:
+  - A middleware ellenőrzi, hogy a bejelentkezett felhasználó adminisztrátor-e (req.user.role === 'admin').
+  - Ha nem admin, akkor hibát jelez.
+- Hibák:
+  - Ha a felhasználó role nem "admin", akkor 409-es státuszkóddal hibaüzenet: "nem vagy admin".
+- Válasz:
+  - Sikeres jogosultság ellenőrzés: A next() metódust hívja, hogy a következő middleware-t vagy route handler-t lefuttathassa.
+  - Hiba: Ha a felhasználó nem admin, hibát küld vissza a válaszban.
+
+---
+
+- 📎 upload – Fájlok feltöltése (Multer middleware)
+  - ### **Függőségek:**
+    - multer: A fájlok feltöltésére használt middleware az Express.js alkalmazások számára.
+    - fs: A fájlrendszer kezelésére használt modul.
+    - path: A fájlok elérési útvonalának kezelésére használt modul.
+
+- Funkció:
+  - A upload middleware lehetővé teszi a több fájl (képformátumok) feltöltését az Express.js alkalmazásba.
+  - A feltöltött fájlokat ideiglenesen a /public/carimgs/temp mappába menti, majd áthelyezi végleges helyre.
+  
+I. Funkcionalitás:
+- destination:
+  - A fájlokat az ./public/carimgs/temp mappába tárolja (ideiglenes hely).
+- filename:
+  - A fájl nevét a következő formátumban generálja: <dátum>-<eredeti_fájlnév>.
+  - A dátum az aktuális időpont (Date.now()), így egyedi lesz minden fájlnév.
+
+II. Upload (Feltöltési beállítások):
+- fileSize limit: A feltöltött fájl maximális mérete 20MB, amit a limits beállításban adunk meg. Ha egy fájl meghaladja ezt a méretet, akkor a rendszer elutasítja a feltöltést.
+- fileFilter: A fájl típusát ellenőrizzük a fileTypes változó segítségével. A megengedett formátumok:
+  - **jpg, jpeg, png, gif, svg, webp, avif, bmp, tiff**
+- Ha a fájl kiterjesztése vagy MIME típusa nem egyezik a megadott típusokkal, akkor hibaüzenetet küldünk: "Csak képeket lehet feltölteni".
+
+- Válasz:
+  - Sikeres feltöltés: A fájl sikeresen feltöltődik a szerverre, és a válaszban a feltöltött fájl elérési útja (vagy más információ) kerül visszaküldésre.
+  - Hiba: Fájl túl nagy vagy érvénytelen formátum.
+
+---
+
+- 📎 useruploadpic – Profilkép feltöltése (Multer middleware)
+  - ### **Függőségek:**
+    - multer: A fájlok feltöltésére használt middleware.
+    - fs: A fájlrendszer kezelésére használt modul.
+    - path: A fájlok elérési útvonalának kezelésére használt modul.
+
+- Funkció:
+  - A useruploadpic middleware lehetővé teszi a felhasználói profilkép feltöltését az Express.js alkalmazásba.
+  - Minden felhasználó saját mappájába menti a képeket (public/userpics/{user_id}/).
+  
+I. Funkcionalitás:
+- destination:
+  - A fájlokat a public/userpics/{user_id} mappába tárolja.
+  - Ha a mappa nem létezik, automatikusan létrehozza a fs.mkdirSync segítségével (recursive: true).
+- filename:
+  - A fájl nevét a következő formátumban generálja: <dátum>-<eredeti_fájlnév>.
+  - A dátum ISO 8601 formátumban van, például: 2025-04-23.
+
+II. Upload (Feltöltési beállítások):
+- fileSize limit: A feltöltött fájl maximális mérete 10MB.
+- fileFilter: A fájl típusát ellenőrizzük a fileTypes változó segítségével. A megengedett formátumok:
+  - **jpg, jpeg, png, gif, svg, webp, avif, bmp, tiff**
+- Ha a fájl kiterjesztése vagy MIME típusa nem egyezik a megadott típusokkal, akkor hibaüzenetet küldünk: "csak képeket lehet feltölteni".
+
+- Válasz:
+  - Sikeres feltöltés: A fájl sikeresen feltöltődik a szerverre.
+  - Hiba: Hiányzó user_id vagy érvénytelen formátum.
+
+</details>
+
+---
+
+<details>
+<summary>Models</summary>
+
+- userModel.js – Felhasználói adatbázis műveletek
+  - ### **Függőségek:**
+    - database (db): MySQL adatbázis kapcsolat
+
+I. findByEmail(email) – Email alapján keresés:
+- Funkció:
+  - Lekéri egy felhasználót az email cím alapján
+- Válasz:
+  - Ha találat van, visszaadja a felhasználó adatait (egy objektum)
+  - Ha nincs találat, null értékkel tér vissza
+
+II. createUser(username, email, hash) – Új felhasználó létrehozása:
+- Funkció:
+  - Létrehoz egy új felhasználót az adatbázisban
+  - A role alapértelmezett értéke: "user"
+  - created_at mezőbe beállítja a jelenlegi időpontot (CURRENT_TIMESTAMP)
+- Válasz:
+  - insertId: Az újonnan létrehozott felhasználó azonosítója
+
+III. isValidEmail(email) – Email formátum validálása:
+- Funkció:
+  - Ellenőrzi, hogy a megadott email cím érvényes-e (regex alapján)
+- Válasz:
+  - true: Érvényes email cím
+  - false: Érvénytelen email cím
+
+IV. insertUserImg(user_id, img) – Profilkép beszúrása:
+- Funkció:
+  - Beszúr egy új profilképet a users_img táblába
+- Válasz:
+  - A beszúrt adatokhoz tartozó eredmény objektum
+
+V. showuserprofilepic(user_id) – Profilkép lekérdezése:
+- Funkció:
+  - Lekéri a felhasználó profilképének elérési útvonalát
+- Válasz:
+  - A kép elérési útvonala (string formájában)
+
+VI. deleteUserImg(user_id) – Profilkép törlése:
+- Funkció:
+  - Törli a felhasználó profilképét az adatbázisból
+- Válasz:
+  - A törölt adatokhoz tartozó eredmény objektum
+
+VII. edituserdata(username, email, password, user_id) – Felhasználói adatok módosítása:
+- Funkció:
+  - Módosítja a felhasználó nevét, email címét és jelszavát
+- Válasz:
+  - A módosított adatokhoz tartozó eredmény objektum
+
+VIII. deleteuserdata(user_id) – Felhasználó törlése:
+- Funkció:
+  - Törli a felhasználót az adatbázisból
+- Válasz:
+  - A törölt adatokhoz tartozó eredmény objektum
+
+IX. viewalluser() – Összes felhasználó lekérdezése:
+- Funkció:
+  - Lekéri az összes felhasználót a users táblából
+- Válasz:
+  - A felhasználók tömbje (több objektum is lehet)
+
+X. adminedituser(username, email, password, role, user_id) – Felhasználói adatok módosítása admin jogosultsággal:
+- Funkció:
+  - Módosítja a felhasználó nevét, email címét, jelszavát és szerepkörét
+- Válasz:
+  - A módosított adatokhoz tartozó eredmény objektum
+
+XI. getallcarswithimg() – Összes jármű lekérdezése (megtalálható képpel):
+- Funkció:
+  - Lekéri az összes járművet a vehicles táblából
+  - JOIN segítségével hozzáadja a képeket is (vehicles_img tábla)
+- Válasz:
+  - A járművek és képek tömbje
+
+XII. currentUserfromid(user_id) – Felhasználó lekérdezése user_id alapján:
+- Funkció:
+  - Lekéri a felhasználót az adatbázisból a user_id alapján
+- Válasz:
+  - A felhasználó adatai (egy objektum)
+
+XIII. currentUser(user_id) – Felhasználó lekérdezése user_id alapján:
+- Funkció:
+  - Lekéri a felhasználót az adatbázisból a user_id alapján
+- Válasz:
+  - A felhasználó adatai (egy objektum)
+
+---
+
+- reserveModel.js – Foglalási műveletek
+  - ### **Függőségek:**
+    - database (db): MySQL adatbázis kapcsolat
+
+I. reservation(user_id) – Saját foglalások lekérdezése:
+- Funkció:
+  - Lekéri a felhasználó összes foglalását
+  - JOIN segítségével hozzáadja a jármű adatait is (vehicles tábla)
+- Válasz:
+  - A felhasználó foglalásainak tömbje
+
+II. checkAvailability(vehicle_id, pickup_date, return_date) – Jármű elérhetőségének ellenőrzése:
+- Funkció:
+  - Ellenőrzi, hogy a jármű elérhető-e az adott időszakra
+  - Keres olyan foglalásokat, amelyek átfedésben vannak az új foglalással
+  - Csak az 'lefoglalva' és 'active_rental' státuszú foglalásokat veszi figyelembe
+- Válasz:
+  - Ha van konfliktus, visszaadja a konfliktusokat (tömb)
+  - Ha nincs konfliktus, üres tömbbel tér vissza
+
+III. newreservation(user_id, vehicle_id, pickup_date, return_date) – Új foglalás létrehozása:
+- Funkció:
+  - Létrehoz egy új foglalást az adatbázisban
+  - Először ellenőrzi az elérhetőséget (checkAvailability)
+  - Ha nincs konfliktus, létrehozza a foglalást 'lefoglalva' státuszban
+- Válasz:
+  - Sikeres létrehozás: A beszúrt adatokhoz tartozó eredmény objektum
+  - Ha konfliktus van, hibaüzenetet dob: "Ez a jármű lefoglalt az adott időszakra"
+
+IV. updatereservation(vehicle_id, pickup_date, return_date, status, reservation_id) – Foglalás módosítása:
+- Funkció:
+  - Módosítja egy foglalás adatait
+- Válasz:
+  - A módosított adatokhoz tartozó eredmény objektum
+
+V. deletereservation(reservation_id, user_id) – Foglalás törlése:
+- Funkció:
+  - Törli egy foglalást (csak a saját felhasználó törölheti)
+- Válasz:
+  - A törölt adatokhoz tartozó eredmény objektum
+
+---
+
+- rentalModel.js – Kibérles műveletek
+  - ### **Függőségek:**
+    - database (db): MySQL adatbázis kapcsolat
+
+I. allrentals() – Összes kibérlés lekérdezése:
+- Funkció:
+  - Lekéri az összes kibérlést a rentals táblából
+- Válasz:
+  - A kibérlések tömbje
+
+II. myrental(user_id) – Felhasználó kibérléseinek lekérdezése:
+- Funkció:
+  - Lekéri egy adott felhasználó összes kibérlését
+- Válasz:
+  - A felhasználó kibérléseinek tömbje
+
+III. newrental(reservation_id, vehicle_id, user_id, start_time, expected_return, actual_return, status, damage_notes) – Új kibérlés létrehozása:
+- Funkció:
+  - Létrehoz egy új kibérést az adatbázisban
+  - A status és damage_notes mezők megadhatók paraméterként
+- Válasz:
+  - A beszúrt adatokhoz tartozó eredmény objektum
+
+IV. updaterental(reservation_id, vehicle_id, start_time, expected_return, actual_return, status, damage_notes, user_id) – Kibérlés módosítása:
+- Funkció:
+  - Módosítja egy kibérles adatait
+- Válasz:
+  - A módosított adatokhoz tartozó eredmény objektum
+
+V. deleterental(rental_id) – Kibérlés törlése:
+- Funkció:
+  - Törli egy kibérést a rental_id alapján
+- Válasz:
+  - A törölt adatokhoz tartozó eredmény objektum
+
+VI. updatereservationstatus(status, reservation_id) – Foglalás státusz módosítása:
+- Funkció:
+  - Módosítja egy foglalás státuszát (pl. 'active_rental', 'completed')
+- Válasz:
+  - A módosított adatokhoz tartozó eredmény objektum
+
+---
+
+- adminModel.js – Adminisztrátori adatbázis műveletek
+  - ### **Függőségek:**
+    - database (db): MySQL adatbázis kapcsolat
+
+I. findByEmail(email) – Email alapján keresés (admin):
+- Funkció:
+  - Lekéri egy admin felhasználót az email cím alapján
+  - Csak azokat a felhasználókat adja vissza, akiknek role="admin"
+- Válasz:
+  - Ha találat van, visszaadja a felhasználó adatait (egy objektum)
+  - Ha nincs találat, null értékkel tér vissza
+
+II. isValidEmail(email) – Email formátum validálása:
+- Funkció:
+  - Ellenőrzi, hogy a megadott email cím érvényes-e (regex alapján)
+- Válasz:
+  - true: Érvényes email cím
+  - false: Érvénytelen email cím
+
+---
+
+- cardataModel.js – Jármű adatbázis műveletek
+  - ### **Függőségeg:**
+    - database (db): MySQL adatbázis kapcsolat
+
+I. getcardata() – Összes jármű lekérdezése:
+- Funkció:
+  - Lekéri az összes járművet a vehicles táblából
+  - A mysql2/promise formátumban adja vissza az eredményt (result[0])
+- Válasz:
+  - A járművek tömbje
+
+II. insernewvehicle(category_id, brand, model, color, transmission, license_plate, year, price_per_day) – Új jármű beszúrása:
+- Funkció:
+  - Létrehoz egy új járművet az adatbázisban
+- Válasz:
+  - A beszúrt adatokhoz tartozó eredmény objektum
+
+III. editvehicle(category_id, brand, model, color, transmission, license_plate, year, price_per_day, vehicle_id) – Jármű adatainak módosítása:
+- Funkció:
+  - Módosítja egy jármű adatait
+- Válasz:
+  - A módosított adatokhoz tartozó eredmény objektum
+
+IV. deletevehicle(vehicle_id) – Jármű törlése:
+- Funkció:
+  - Törli egy járművet a vehicle_id alapján
+- Válasz:
+  - A törölt adatokhoz tartozó eredmény objektum
+
+---
+
+- carImgModel.js – Jármű kép műveletek
+  - ### **Függőségek:**
+    - database (db): MySQL adatbázis kapcsolat
+
+I. insertVehicleImg(vehicle_id, img) – Járműkép beszúrása:
+- Funkció:
+  - Beszúr egy új járműképet a vehicles_img táblába
+- Válasz:
+  - A beszúrt adatokhoz tartozó eredmény objektum
+
+II. allVehicleImg() – Összes járműkép lekérdezése:
+- Funkció:
+  - Lekéri az összes járműhöz tartozó képet
+  - JOIN segítségével kapcsolja össze a vehicles táblával
+- Válasz:
+  - A járművekhez tartozó képek tömbje
+
+III. delCarImg(vehicle_id) – Járműkép törlése:
+- Funkció:
+  - Törli egy járműhöz tartozó képeket az adatbázisból
+- Válasz:
+  - A törölt adatokhoz tartozó eredmény objektum
+
+---
+
+- categoryModel.js – Kategória műveletek
+  - ### **Függőségek:**
+    - database (db): MySQL adatbázis kapcsolat
+
+I. viewallcategory() – Összes kategória lekérdezése:
+- Funkció:
+  - Lekéri az összes kategóriát a vehicle_category táblából
+- Válasz:
+  - A kategóriák tömbje
+
+II. addNewcategory(name) – Új kategória létrehozása:
+- Funkció:
+  - Létrehoz egy új kategóriát a vehicle_category táblában
+- Válasz:
+  - A beszúrt adatokhoz tartozó eredmény objektum
+
+III. updateCategory(name, category_id) – Kategória módosítása:
+- Funkció:
+  - Módosítja egy kategória nevét
+- Válasz:
+  - A módosított adatokhoz tartozó eredmény objektum
+
+IV. deleteCategory(category_id) – Kategória törlése:
+- Funkció:
+  - Törli egy kategóriát a category_id alapján
+- Válasz:
+  - A törölt adatokhoz tartozó eredmény objektum
+
+---
+
+- filterModels.js – Szűrési műveletek
+  - ### **Függőségek:**
+    - database (db): MySQL adatbázis kapcsolat
+
+I. filterVehicles(filters) – Jármű szűrés kritériumok alapján:
+- Funkció:
+  - Dinamikus SQL lekérdezést hoz létre a szűrési kritériumok alapján
+  - Támogatott szűrési feltételek: brand, color, transmission, year, min_price, max_price
+  - Rendezés növekvő vagy csökkenő sorrendben (price_per_day szerint)
+- Válasz:
+  - A szűrt járművek tömbje
+
+---
+
+- AdminreserveModel.js – Admin foglalás műveletek
+  - ### **Függőségek:**
+    - database (db): MySQL adatbázis kapcsolat
+
+I. Adminreservation() – Összes admin foglalás lekérdezése:
+- Funkció:
+  - Lekéri az összes foglalást a reservations táblából
+- Válasz:
+  - A foglalások tömbje
+
+II. Adminupdatereservation(user_id, vehicle_id, pickup_date, return_date, status, created_at, reservation_id) – Admin foglalás módosítása:
+- Funkció:
+  - Módosítja egy foglalás adatait adminisztrátori jogosultsággal
+- Válasz:
+  - A módosított adatokhoz tartozó eredmény objektum
+
+III. Admindeletereservation(reservation_id) – Admin foglalás törlése:
+- Funkció:
+  - Törli egy foglalást a reservation_id alapján adminisztrátori jogosultsággal
+- Válasz:
+  - A törölt adatokhoz tartozó eredmény objektum
+
+---
+
+</details>
+
+# app.js – Alkalmazás belépési pontja
+  1. Függőségek:
+    - express: A szerver létrehozásához használt web framework.
+    - cookie-parser: A HTTP-sütik kezeléséhez (JWT token cookie-ban történő tárolása).
+    - cors: A cross-origin kérések kezelése a frontend (localhost:5173, netlify) és backend között.
+    - path: Az elérési utak kezelésére szolgáló natív Node.js modul.
+   
+  2. CORS beállítások:
+     - origin: ['http://localhost:5173', 'https://urbanrentalbaross.netlify.app']
+     - credentials: true (sütik küldése cross-origin kérésekben)
+  
+  3. Betöltött route-ok:
+      - /users: Felhasználói műveletek (regisztráció, bejelentkezés, profil, foglalások, szűrés)
+      - /admin: Adminisztrátori műveletek (jármű kezelés, kategória kezelés, felhasználók kezelése, foglalások, kibérlések)
+      - /global: Nyilvános útvonalak (járműkatalógus, szűrés bejelentkezés nélkül is elérhető)
+      - /api/payments: Fizetési műveletek (fizetés feldolgozása, ár számítás)
+  
+  4. Middleware-ek:
+     - express.json(): A JSON típusú body-k elemzése.
+     - cookieParser(): Sütik olvasása a kérésekből.
+     - express.urlencoded({ extended: true }): URL-kódolt body-k elemzése.
+     - cors(): CORS beállítások engedélyezése.
+
+  5. Statikus fájlkezelés:
+     - app.use('/public', express.static(...)): A feltöltött fájlokat (képek) statikus útvonalon keresztül teszi elérhetővé.
+  
+  6. Megjegyzések:
+     - Több route modul van regisztrálva, amelyek közös middlewareket használnak (auth, admin).
+     - Az upload middleware képekre van beállítva, külön profilkép feltöltés is elérhető.
+
+---
+
+# Adatbázis Sémák:
+
+## users tábla:
+- user_id: INT (AUTO_INCREMENT, PRIMARY KEY)
+- username: VARCHAR(255) – Felhasználónév
+- email: VARCHAR(255) – Email cím (egedi)
+- password: VARCHAR(255) – Jelszó (titkosítva bcrypt-al)
+- role: ENUM('user', 'admin') – Szerepkör
+- created_at: DATETIME – Létrehozás időpontja
+
+## users_img tábla:
+- user_id: INT (FOREIGN KEY, REFERENCES users.user_id)
+- user_img: VARCHAR(255) – Profilkép elérési útvonala
+
+## reservations tábla:
+- reservation_id: INT (AUTO_INCREMENT, PRIMARY KEY)
+- user_id: INT (FOREIGN KEY, REFERENCES users.user_id)
+- vehicle_id: INT (FOREIGN KEY, REFERENCES vehicles.vehicle_id)
+- pickup_date: DATE – Felveszés dátuma
+- return_date: DATE – Visszaadás dátuma
+- status: ENUM('lefoglalva', 'active_rental', 'completed') – Státusz
+- created_at: DATETIME – Létrehozás időpontja
+
+## rentals tábla:
+- rental_id: INT (AUTO_INCREMENT, PRIMARY KEY)
+- reservation_id: INT (FOREIGN KEY, REFERENCES reservations.reservation_id)
+- vehicle_id: INT (FOREIGN KEY, REFERENCES vehicles.vehicle_id)
+- user_id: INT (FOREIGN KEY, REFERENCES users.user_id)
+- start_time: DATETIME – Kibérles kezdete
+- expected_return: DATETIME – Várható visszaadás
+- actual_return: DATETIME – Tényleges visszaadás
+- status: ENUM('active', 'completed') – Státusz
+- damage_notes: TEXT – Károsodások megjegyzései
+
+## vehicles tábla:
+- vehicle_id: INT (AUTO_INCREMENT, PRIMARY KEY)
+- category_id: INT (FOREIGN KEY, REFERENCES vehicle_category.category_id)
+- brand: VARCHAR(255) – Marka
+- model: VARCHAR(255) – Modell
+- color: VARCHAR(100) – Szín
+- transmission: ENUM('manual', 'automatic') – Váltó típusa
+- license_plate: VARCHAR(20) – Rendszám
+- year: INT – Évjárat
+- price_per_day: DECIMAL(10, 2) – Ár naponta
+
+## vehicles_img tábla:
+- vehicle_id: INT (FOREIGN KEY, REFERENCES vehicles.vehicle_id)
+- img: VARCHAR(255) – Kép elérési útvonala
+
+## vehicle_category tábla:
+- category_id: INT (AUTO_INCREMENT, PRIMARY KEY)
+- name: VARCHAR(255) – Kategória neve
