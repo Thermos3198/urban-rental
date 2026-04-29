@@ -156,6 +156,7 @@ async function deletewholevehicle(req, res) {
             return res.status(404).json({ message: "Nem létezik ilyen" })
         }
         else {
+            console.log(result);
             res.status(204).json({ message: "Sikeres törlés" })
         }
 
