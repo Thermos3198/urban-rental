@@ -16,16 +16,16 @@ async function viewAdminreservations(req,res){
 
 async function UAdminreservations(req,res){
     try {
-        const {user_id,vehicle_id,pickup_date,return_date,status,created_at } = req.body
+        const {user_id,vehicle_id,pickup_date,return_date,created_at } = req.body
         const {reservation_id} = req.params
-        console.log(user_id,vehicle_id,pickup_date,return_date,status,created_at );
+        console.log(user_id,vehicle_id,pickup_date,return_date,created_at );
         console.log(reservation_id);
         
         if (!pickup_date || !return_date) {
             return res.status(400).json({ error: "Pickup és return date kötelező" });
         }
 
-        const result = await Adminupdatereservation(user_id,vehicle_id,pickup_date,return_date,status,created_at,reservation_id)
+        const result = await Adminupdatereservation(user_id,vehicle_id,pickup_date,return_date,created_at,reservation_id)
         console.log(result);
         res.status(201).json({message:"Sikeres modisitás",result})
     } catch (err) {

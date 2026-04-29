@@ -576,6 +576,8 @@ III. Admindeletereservation(reservation_id) – Admin foglalás törlése
 ---
 
 # Adatbázis Sémák:
+## Adatbazis felépitése
+- [DrawSql urban rental](https://drawsql.app/teams/kovacspeter/diagrams/car-rental)
 
 ## users tábla:
 - user_id: INT (AUTO_INCREMENT, PRIMARY KEY)
@@ -598,16 +600,6 @@ III. Admindeletereservation(reservation_id) – Admin foglalás törlése
 - status: ENUM('lefoglalva', 'active_rental', 'completed') – Státusz
 - created_at: DATETIME – Létrehozás időpontja
 
-## rentals tábla:
-- rental_id: INT (AUTO_INCREMENT, PRIMARY KEY)
-- reservation_id: INT (FOREIGN KEY, REFERENCES reservations.reservation_id)
-- vehicle_id: INT (FOREIGN KEY, REFERENCES vehicles.vehicle_id)
-- user_id: INT (FOREIGN KEY, REFERENCES users.user_id)
-- start_time: DATETIME – Kibérles kezdete
-- expected_return: DATETIME – Várható visszaadás
-- actual_return: DATETIME – Tényleges visszaadás
-- status: ENUM('active', 'completed') – Státusz
-- damage_notes: TEXT – Károsodások megjegyzései
 
 ## vehicles tábla:
 - vehicle_id: INT (AUTO_INCREMENT, PRIMARY KEY)
@@ -628,6 +620,9 @@ III. Admindeletereservation(reservation_id) – Admin foglalás törlése
 - category_id: INT (AUTO_INCREMENT, PRIMARY KEY)
 - name: VARCHAR(255) – Kategória neve
 
+
+# Tesztelés
+- [Postman](https://kovacspeter084-572392.postman.co/workspace/8b648e0d-1eba-442e-8a4f-b6964910a88d/documentation/48099843-c4d57f32-04c4-4cc5-9bb3-5e8a77b151d3)
 ---
 
 # Telepítés és használat:
@@ -652,3 +647,5 @@ npm run dev
 - [Netlify](https://www.netlify.com)
 - [Figma](https://www.figma.com)
 - [FontAwesome](https://fontawesome.com)
+- [DrawSql](https://drawsql.app/teams/kovacspeter/diagrams/car-rental)
+- [Postman](https://www.postman.com/)

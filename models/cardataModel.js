@@ -20,12 +20,12 @@ async function editvehicle(category_id,brand, model, color, transmission, licens
     const sql = 'UPDATE `vehicles` SET `category_id`=?, `brand`=?,`model`=?,`color`=?,`transmission`=?,`license_plate`=?,`year`=? , `price_per_day`=? WHERE `vehicle_id`=?'
     const [result] = await db.query(sql, [category_id,brand, model, color, transmission, license_plate, year, price_per_day, vehicle_id]);
     console.log(result);
-    return result
+    return [result]
 }
 
 async function deletevehicle(vehicle_id) {
     const sql = 'DELETE FROM `vehicles` WHERE `vehicle_id`=?'
-    const [result] = await db.query(sql, [vehicle_id]);
+    const result = await db.query(sql, [vehicle_id]);
     console.log(result);
     return result
 }
